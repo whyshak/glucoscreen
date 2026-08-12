@@ -1,6 +1,6 @@
-# Flask Application Scaffold
+# Flask Application Scaffold with ML Support
 
-A clean, modular Flask application initialized with the Application Factory pattern, Flask-SQLAlchemy, and environment configuration.
+A clean, modular Flask application initialized with the Application Factory pattern, Flask-SQLAlchemy, environment configuration, and Machine Learning deployment dependencies (`scikit-learn`, `pandas`, `numpy`, `joblib`, `gunicorn`).
 
 ## Project Structure
 
@@ -20,7 +20,7 @@ myapp/
 ├── .env.example         # Template for environment variables
 ├── .gitignore           # Git ignore settings
 ├── .flaskenv            # Flask CLI configuration
-├── requirements.txt     # Pinned Python package dependencies
+├── requirements.txt     # Pinned Python package dependencies (Flask, ML libraries, WSGI server)
 ├── run.py               # Entry point script
 └── README.md            # Project documentation
 ```
@@ -53,6 +53,12 @@ Install pinned Python dependencies from `requirements.txt`:
 pip install -r requirements.txt
 ```
 
+Installed ML packages include:
+- `scikit-learn`: Model loading, inference, preprocessing pipelines.
+- `pandas` & `numpy`: Data structures, array operations, and feature manipulation.
+- `joblib`: Model serialization / deserialization.
+- `gunicorn`: Production WSGI HTTP server for ML inference deployments.
+
 ### 3. Environment Setup
 
 Copy `.env.example` to `.env` if not present:
@@ -67,16 +73,16 @@ Customize your `.env` variables if necessary:
 
 ### 4. Run the Application
 
-You can run the application using either the Flask CLI or direct Python execution:
-
-#### Using Flask CLI
+#### Development Mode
 ```bash
 flask run
+# OR
+python run.py
 ```
 
-#### Using Python Entry Point
+#### Production Deployment (Gunicorn WSGI Server)
 ```bash
-python run.py
+gunicorn "app:create_app()" -w 4 -b 0.0.0.0:5000
 ```
 
 The application will be accessible at `http://127.0.0.1:5000/`.
