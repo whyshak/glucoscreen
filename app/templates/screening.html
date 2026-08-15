@@ -1,0 +1,562 @@
+{% extends "_base.html" %}
+
+{% block title %}Diabetes Risk Screening — GlucoScreen{% endblock %}
+{% block description %}Complete your free 7-step diabetes risk assessment using CDC health indicators. Takes about 3 minutes.{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* Page-level overrides for screening */
+  body { background: linear-gradient(180deg, var(--brand-50) 0%, #ffffff 300px); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="screening-page">
+<div class="screening-wrap">
+
+  <!-- ── Progress Header ─────────────────────────────────────────────── -->
+  <div class="progress-header" id="progressHeader" style="display:none;" aria-live="polite">
+    <div class="progress-meta">
+      <span class="progress-step-name" id="progressStepName">Demographics</span>
+      <span class="progress-counter"  id="progressCounter">Step 1 of 7</span>
+    </div>
+    <div class="progress-bar-track" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       STEP 0 — Intro / About You
+  ═══════════════════════════════════════════════════════════════════ -->
+  <div class="step-pane" id="step-0">
+    <div class="step-pane__icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+           fill="currentColor">
+        <path d="M12 2C6.5 7.2 4 10.9 4 14a8 8 0 0016 0c0-3.1-2.5-6.8-8-12z"/>
+      </svg>
+    </div>
+    <h1 class="step-pane__title">Welcome to GlucoScreen</h1>
+    <p class="step-pane__sub">
+      This quick, 7-step assessment uses CDC health indicators to estimate your diabetes risk.
+      It takes about <strong>3 minutes</strong> to complete. Your information stays private.
+    </p>
+
+    <!-- Optional nickname -->
+    <div class="nickname-field">
+      <label class="field-label" for="nickname">
+        What should we call you?
+        <span>(optional)</span>
+      </label>
+      <input
+        type="text"
+        id="nickname"
+        class="field-input"
+        placeholder="e.g. Alex"
+        maxlength="50"
+        autocomplete="given-name"
+        aria-describedby="nickname-hint"
+      />
+      <small id="nickname-hint" style="font-size:0.78rem;color:var(--slate-400);margin-top:0.25rem;display:block;">
+        Stored in your session only — never saved to a database.
+      </small>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer" role="note">
+      <strong>Medical disclaimer:</strong> This tool is for informational purposes only and does
+      not constitute medical advice. Always consult a qualified healthcare professional.
+    </div>
+  </div><!-- /step-0 -->
+
+
+  <!-- ════════════════════════════════════════════════════════════════
+       STEP 1 — Demographics
+  ═══════════════════════════════════════════════════════════════════ -->
+  <div class="step-pane" id="step-1" style="display:none;">
+    <div class="step-pane__icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+    </div>
+    <h2 class="step-pane__title">About you</h2>
+    <p class="step-pane__sub">Basic physical details help calculate your BMI — a key diabetes risk factor.</p>
+
+    <div class="field-group">
+      <!-- Age & Sex -->
+      <div class="field-row field-row--2">
+        <div>
+          <label class="field-label" for="age">Age <span>(years)</span></label>
+          <input type="number" id="age" class="field-input" placeholder="e.g. 45"
+                 min="10" max="120" inputmode="numeric" autocomplete="age"
+                 aria-describedby="age-hint"/>
+          <small id="age-hint" style="display:none;">Enter age between 10–120</small>
+        </div>
+        <div>
+          <label class="field-label">Sex assigned at birth</label>
+          <div class="yn-pills" role="group" aria-label="Sex">
+            <button type="button" class="yn-pill sex-pill" data-val="0" id="sex-female" aria-pressed="false">Female</button>
+            <button type="button" class="yn-pill sex-pill" data-val="1" id="sex-male"   aria-pressed="false">Male</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Unit toggle -->
+      <div>
+        <label class="field-label">Units</label>
+        <div class="unit-toggle" role="group" aria-label="Measurement units">
+          <button type="button" class="unit-toggle__btn active" data-unit="metric"   id="unitMetric">Metric</button>
+          <button type="button" class="unit-toggle__btn"        data-unit="imperial" id="unitImperial">Imperial</button>
+        </div>
+
+        <!-- Metric fields -->
+        <div id="metricFields">
+          <div class="field-row field-row--2">
+            <div>
+              <label class="field-label" for="heightCm">Height <span>(cm)</span></label>
+              <input type="number" id="heightCm" class="field-input" placeholder="e.g. 170"
+                     min="50" max="250" inputmode="decimal"/>
+            </div>
+            <div>
+              <label class="field-label" for="weightKg">Weight <span>(kg)</span></label>
+              <input type="number" id="weightKg" class="field-input" placeholder="e.g. 70"
+                     min="10" max="500" inputmode="decimal"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Imperial fields -->
+        <div id="imperialFields" style="display:none;">
+          <div class="field-row field-row--3">
+            <div>
+              <label class="field-label" for="heightFt">Height <span>(ft)</span></label>
+              <input type="number" id="heightFt" class="field-input" placeholder="5"
+                     min="1" max="8" inputmode="numeric"/>
+            </div>
+            <div>
+              <label class="field-label" for="heightIn">Inches</label>
+              <input type="number" id="heightIn" class="field-input" placeholder="8"
+                     min="0" max="11" inputmode="numeric"/>
+            </div>
+            <div>
+              <label class="field-label" for="weightLb">Weight <span>(lb)</span></label>
+              <input type="number" id="weightLb" class="field-input" placeholder="154"
+                     min="22" max="1100" inputmode="decimal"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live BMI badge -->
+        <div class="bmi-badge" id="bmiBadge" style="display:none;" aria-live="polite">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+               stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+          </svg>
+          BMI: <span class="bmi-val"></span>
+        </div>
+      </div>
+    </div><!-- /field-group -->
+  </div><!-- /step-1 -->
+
+
+  <!-- ════════════════════════════════════════════════════════════════
+       STEP 2 — Health Conditions
+  ═══════════════════════════════════════════════════════════════════ -->
+  <div class="step-pane" id="step-2" style="display:none;">
+    <div class="step-pane__icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+      </svg>
+    </div>
+    <h2 class="step-pane__title">Health conditions</h2>
+    <p class="step-pane__sub">Have you ever been told by a doctor or health professional that you have…</p>
+
+    <div class="field-group" role="group" aria-label="Health conditions questions">
+
+      <div class="yn-group">
+        <p class="yn-label">High blood pressure (hypertension)?</p>
+        <div class="yn-pills" role="group" aria-label="High blood pressure">
+          <button type="button" class="yn-pill" data-field="highBp" data-val="true"  id="highBp-yes" aria-pressed="false">Yes</button>
+          <button type="button" class="yn-pill" data-field="highBp" data-val="false" id="highBp-no"  aria-pressed="false">No</button>
+        </div>
+      </div>
+
+      <div class="yn-group">
+        <p class="yn-label">High blood cholesterol?</p>
+        <div class="yn-pills" role="group" aria-label="High cholesterol">
+          <button type="button" class="yn-pill" data-field="highChol" data-val="true"  id="highChol-yes" aria-pressed="false">Yes</button>
+          <button type="button" class="yn-pill" data-field="highChol" data-val="false" id="highChol-no"  aria-pressed="false">No</button>
+        </div>
+      </div>
+
+      <div class="yn-group">
+        <p class="yn-label">Cholesterol check in the past 5 years?</p>
+        <div class="yn-pills" role="group" aria-label="Cholesterol check">
+          <button type="button" class="yn-pill" data-field="cholCheck" data-val="true"  id="cholCheck-yes" aria-pressed="false">Yes</button>
+          <button type="button" class="yn-pill" data-field="cholCheck" data-val="false" id="cholCheck-no"  aria-pressed="false">No</button>
+        </div>
+      </div>
+
+      <div class="yn-group">
+        <p class="yn-label">Smoked at least 100 cigarettes in your entire life?</p>
+        <div class="yn-pills" role="group" aria-label="Smoker">
+          <button type="button" class="yn-pill" data-field="smoker" data-val="true"  id="smoker-yes" aria-pressed="false">Yes</button>
+          <button type="button" class="yn-pill" data-field="smoker" data-val="false" id="smoker-no"  aria-pressed="false">No</button>
+        </div>
+      </div>
+
+      <div class="yn-group">
+        <p class="yn-label">Ever told you had a stroke?</p>
+        <div class="yn-pills" role="group" aria-label="Stroke">
+          <button type="button" class="yn-pill" data-field="stroke" data-val="true"  id="stroke-yes" aria-pressed="false">Yes</button>
+          <button type="button" class="yn-pill" data-field="stroke" data-val="false" id="stroke-no"  aria-pressed="false">No</button>
+        </div>
+      </div>
+
+      <div class="yn-group">
+        <p class="yn-label">Coronary heart disease or a heart attack?</p>
+        <div class="yn-pills" role="group" aria-label="Heart disease">
+          <button type="button" class="yn-pill" data-field="heartDisease" data-val="true"  id="heartDisease-yes" aria-pressed="false">Yes</button>
+          <button type="button" class="yn-pill" data-field="heartDisease" data-val="false" id="heartDisease-no"  aria-pressed="false">No</button>
+        </div>
+      </div>
+
+    </div><!-- /field-group -->
+  </div><!-- /step-2 -->
+
+
+  <!-- ════════════════════════════════════════════════════════════════
+       STEP 3 — Lifestyle
+  ═══════════════════════════════════════════════════════════════════ -->
+  <div class="step-pane" id="step-3" style="display:none;">
+    <div class="step-pane__icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="5" r="1"/><path d="M9 20l3-7 3 7M6 12h12M12 10v2"/>
+      </svg>
+    </div>
+    <h2 class="step-pane__title">Lifestyle</h2>
+    <p class="step-pane__sub">In the past 30 days, did you…</p>
+
+    <div class="field-group" role="group" aria-label="Lifestyle questions">
+
+      <div class="yn-group">
+        <p class="yn-label">
+          Do any physical activity or exercise (outside of work)?
+          <small>e.g. walking, running, cycling</small>
+        </p>
+        <div class="yn-pills" role="group" aria-label="Physical activity">
+          <button type="button" class="yn-pill" data-field="physActivity" data-val="true"  id="physActivity-yes" aria-pressed="false">Yes</button>
+          <button type="button" class="yn-pill" data-field="physActivity" data-val="false" id="physActivity-no"  aria-pressed="false">No</button>
+        </div>
+      </div>
+
+      <div class="yn-group">
+        <p class="yn-label">
+          Consume fruit one or more times per day?
+        </p>
+        <div class="yn-pills" role="group" aria-label="Fruit consumption">
+          <button type="button" class="yn-pill" data-field="fruits" data-val="true"  id="fruits-yes" aria-pressed="false">Yes</button>
+          <button type="button" class="yn-pill" data-field="fruits" data-val="false" id="fruits-no"  aria-pressed="false">No</button>
+        </div>
+      </div>
+
+      <div class="yn-group">
+        <p class="yn-label">
+          Consume vegetables one or more times per day?
+        </p>
+        <div class="yn-pills" role="group" aria-label="Vegetable consumption">
+          <button type="button" class="yn-pill" data-field="veggies" data-val="true"  id="veggies-yes" aria-pressed="false">Yes</button>
+          <button type="button" class="yn-pill" data-field="veggies" data-val="false" id="veggies-no"  aria-pressed="false">No</button>
+        </div>
+      </div>
+
+      <div class="yn-group">
+        <p class="yn-label">
+          Heavy alcohol consumption?
+          <small>Men: &gt;14 drinks/week · Women: &gt;7 drinks/week</small>
+        </p>
+        <div class="yn-pills" role="group" aria-label="Heavy alcohol">
+          <button type="button" class="yn-pill" data-field="hvyAlcohol" data-val="true"  id="hvyAlcohol-yes" aria-pressed="false">Yes</button>
+          <button type="button" class="yn-pill" data-field="hvyAlcohol" data-val="false" id="hvyAlcohol-no"  aria-pressed="false">No</button>
+        </div>
+      </div>
+
+      <div class="yn-group">
+        <p class="yn-label">
+          Difficulty walking or climbing stairs?
+        </p>
+        <div class="yn-pills" role="group" aria-label="Difficulty walking">
+          <button type="button" class="yn-pill" data-field="diffWalk" data-val="true"  id="diffWalk-yes" aria-pressed="false">Yes</button>
+          <button type="button" class="yn-pill" data-field="diffWalk" data-val="false" id="diffWalk-no"  aria-pressed="false">No</button>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /step-3 -->
+
+
+  <!-- ════════════════════════════════════════════════════════════════
+       STEP 4 — Healthcare & Cost  (AnyHealthcare + NoDocbcCost)
+  ═══════════════════════════════════════════════════════════════════ -->
+  <div class="step-pane" id="step-4" style="display:none;">
+    <div class="step-pane__icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 000-7.78z"/>
+      </svg>
+    </div>
+    <h2 class="step-pane__title">Healthcare &amp; cost</h2>
+    <p class="step-pane__sub">
+      Access to healthcare is an important social determinant of health and diabetes risk.
+    </p>
+
+    <div class="field-group" role="group" aria-label="Healthcare access questions">
+
+      <div class="yn-group">
+        <p class="yn-label">
+          Do you have any kind of health care coverage?
+          <small>Includes health insurance, prepaid plans such as HMO, etc.</small>
+        </p>
+        <div class="yn-pills" role="group" aria-label="Healthcare coverage">
+          <button type="button" class="yn-pill" data-field="anyHealthcare" data-val="true"  id="anyHealthcare-yes" aria-pressed="false">Yes</button>
+          <button type="button" class="yn-pill" data-field="anyHealthcare" data-val="false" id="anyHealthcare-no"  aria-pressed="false">No</button>
+        </div>
+      </div>
+
+      <div class="yn-group">
+        <p class="yn-label">
+          Was there a time in the <strong>past 12 months</strong> when you needed to see a doctor but
+          could not because of <strong>cost</strong>?
+        </p>
+        <div class="yn-pills" role="group" aria-label="No doctor due to cost">
+          <button type="button" class="yn-pill" data-field="noDocbcCost" data-val="true"  id="noDocbcCost-yes" aria-pressed="false">Yes</button>
+          <button type="button" class="yn-pill" data-field="noDocbcCost" data-val="false" id="noDocbcCost-no"  aria-pressed="false">No</button>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /step-4 -->
+
+
+  <!-- ════════════════════════════════════════════════════════════════
+       STEP 5 — Wellbeing
+  ═══════════════════════════════════════════════════════════════════ -->
+  <div class="step-pane" id="step-5" style="display:none;">
+    <div class="step-pane__icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12h3l3-9 3 18 3-9h3"/>
+      </svg>
+    </div>
+    <h2 class="step-pane__title">Wellbeing</h2>
+    <p class="step-pane__sub">How would you rate your general health and recent wellbeing?</p>
+
+    <div class="field-group">
+
+      <!-- General health scale -->
+      <div>
+        <label class="field-label">General health</label>
+        <div class="scale-pills" role="group" aria-label="General health rating 1 to 5">
+          <button type="button" class="scale-pill" data-val="1" id="genHlth-1" aria-pressed="false">1<br><small>Excellent</small></button>
+          <button type="button" class="scale-pill" data-val="2" id="genHlth-2" aria-pressed="false">2<br><small>Very Good</small></button>
+          <button type="button" class="scale-pill" data-val="3" id="genHlth-3" aria-pressed="false">3<br><small>Good</small></button>
+          <button type="button" class="scale-pill" data-val="4" id="genHlth-4" aria-pressed="false">4<br><small>Fair</small></button>
+          <button type="button" class="scale-pill" data-val="5" id="genHlth-5" aria-pressed="false">5<br><small>Poor</small></button>
+        </div>
+      </div>
+
+      <!-- Mental health slider -->
+      <div class="slider-wrap">
+        <div class="slider-top">
+          <label class="field-label" for="mentHlthSlider">
+            Days of poor <em>mental</em> health
+            <span style="font-weight:400;font-size:0.78rem;color:var(--slate-400);">(past 30 days)</span>
+          </label>
+          <span class="slider-val" id="mentHlthVal">0 days</span>
+        </div>
+        <input type="range" id="mentHlthSlider" min="0" max="30" value="0"
+               aria-valuemin="0" aria-valuemax="30" aria-valuenow="0"
+               aria-label="Days of poor mental health"/>
+      </div>
+
+      <!-- Physical health slider -->
+      <div class="slider-wrap">
+        <div class="slider-top">
+          <label class="field-label" for="physHlthSlider">
+            Days of poor <em>physical</em> health / illness/injury
+            <span style="font-weight:400;font-size:0.78rem;color:var(--slate-400);">(past 30 days)</span>
+          </label>
+          <span class="slider-val" id="physHlthVal">0 days</span>
+        </div>
+        <input type="range" id="physHlthSlider" min="0" max="30" value="0"
+               aria-valuemin="0" aria-valuemax="30" aria-valuenow="0"
+               aria-label="Days of poor physical health"/>
+      </div>
+
+    </div>
+  </div><!-- /step-5 -->
+
+
+  <!-- ════════════════════════════════════════════════════════════════
+       STEP 6 — Background
+  ═══════════════════════════════════════════════════════════════════ -->
+  <div class="step-pane" id="step-6" style="display:none;">
+    <div class="step-pane__icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>
+        <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>
+      </svg>
+    </div>
+    <h2 class="step-pane__title">Background</h2>
+    <p class="step-pane__sub">Socioeconomic factors help refine the risk estimate. All answers are anonymous.</p>
+
+    <div class="field-group">
+      <div class="field-row field-row--2">
+        <!-- Education -->
+        <div>
+          <label class="field-label" for="educationSelect">Highest education level</label>
+          <select id="educationSelect" class="field-input field-select" aria-required="true">
+            <option value="" disabled selected>Select…</option>
+            <option value="1">Never attended school or kindergarten only</option>
+            <option value="2">Elementary (grades 1–8)</option>
+            <option value="3">Some high school (grades 9–11)</option>
+            <option value="4">High school graduate or GED</option>
+            <option value="5">Some college or technical school</option>
+            <option value="6">College graduate (4+ years)</option>
+          </select>
+        </div>
+
+        <!-- Income -->
+        <div>
+          <label class="field-label" for="incomeSelect">Annual household income</label>
+          <select id="incomeSelect" class="field-input field-select" aria-required="true">
+            <option value="" disabled selected>Select…</option>
+            <option value="1">Less than $10,000</option>
+            <option value="2">$10,000 – $14,999</option>
+            <option value="3">$15,000 – $19,999</option>
+            <option value="4">$20,000 – $24,999</option>
+            <option value="5">$25,000 – $34,999</option>
+            <option value="6">$35,000 – $49,999</option>
+            <option value="7">$50,000 – $74,999</option>
+            <option value="8">$75,000 or more</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div><!-- /step-6 -->
+
+
+  <!-- ════════════════════════════════════════════════════════════════
+       STEP 7 — Review
+  ═══════════════════════════════════════════════════════════════════ -->
+  <div class="step-pane" id="step-7" style="display:none;">
+    <div class="step-pane__icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 11 12 14 22 4"/>
+        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+      </svg>
+    </div>
+    <h2 class="step-pane__title">Review your answers</h2>
+    <p class="step-pane__sub">Please double-check everything before submitting. Click <em>Submit</em> to get your risk estimate.</p>
+
+    <div class="review-grid" aria-label="Summary of your answers">
+
+      <!-- About -->
+      <div class="review-section-title">About you</div>
+      <div class="review-row"><span class="review-key">Name</span><span class="review-val" id="rv-nickname">—</span></div>
+      <div class="review-row"><span class="review-key">Age</span><span class="review-val" id="rv-age">—</span></div>
+      <div class="review-row"><span class="review-key">Sex</span><span class="review-val" id="rv-sex">—</span></div>
+      <div class="review-row"><span class="review-key">BMI</span><span class="review-val" id="rv-bmi">—</span></div>
+
+      <!-- Health conditions -->
+      <div class="review-section-title">Health conditions</div>
+      <div class="review-row"><span class="review-key">High blood pressure</span><span class="review-val" id="rv-highBp">—</span></div>
+      <div class="review-row"><span class="review-key">High cholesterol</span><span class="review-val" id="rv-highChol">—</span></div>
+      <div class="review-row"><span class="review-key">Cholesterol check</span><span class="review-val" id="rv-cholCheck">—</span></div>
+      <div class="review-row"><span class="review-key">Smoker</span><span class="review-val" id="rv-smoker">—</span></div>
+      <div class="review-row"><span class="review-key">Stroke</span><span class="review-val" id="rv-stroke">—</span></div>
+      <div class="review-row"><span class="review-key">Heart disease</span><span class="review-val" id="rv-heartDisease">—</span></div>
+
+      <!-- Lifestyle -->
+      <div class="review-section-title">Lifestyle</div>
+      <div class="review-row"><span class="review-key">Physical activity</span><span class="review-val" id="rv-physActivity">—</span></div>
+      <div class="review-row"><span class="review-key">Fruits daily</span><span class="review-val" id="rv-fruits">—</span></div>
+      <div class="review-row"><span class="review-key">Vegetables daily</span><span class="review-val" id="rv-veggies">—</span></div>
+      <div class="review-row"><span class="review-key">Heavy alcohol</span><span class="review-val" id="rv-hvyAlcohol">—</span></div>
+      <div class="review-row"><span class="review-key">Difficulty walking</span><span class="review-val" id="rv-diffWalk">—</span></div>
+
+      <!-- Healthcare & Cost -->
+      <div class="review-section-title">Healthcare &amp; Cost</div>
+      <div class="review-row"><span class="review-key">Has healthcare coverage</span><span class="review-val" id="rv-anyHealthcare">—</span></div>
+      <div class="review-row"><span class="review-key">Skipped doctor due to cost</span><span class="review-val" id="rv-noDocbcCost">—</span></div>
+
+      <!-- Wellbeing -->
+      <div class="review-section-title">Wellbeing</div>
+      <div class="review-row"><span class="review-key">General health</span><span class="review-val" id="rv-genHlth">—</span></div>
+      <div class="review-row"><span class="review-key">Poor mental health</span><span class="review-val" id="rv-mentHlth">—</span></div>
+      <div class="review-row"><span class="review-key">Poor physical health</span><span class="review-val" id="rv-physHlth">—</span></div>
+
+      <!-- Background -->
+      <div class="review-section-title">Background</div>
+      <div class="review-row"><span class="review-key">Education</span><span class="review-val" id="rv-education">—</span></div>
+      <div class="review-row"><span class="review-key">Income</span><span class="review-val" id="rv-income">—</span></div>
+
+    </div><!-- /review-grid -->
+
+    <!-- Error alert (shown on submit failure) -->
+    <div class="alert-error" id="errorAlert" style="display:none;" role="alert" aria-live="assertive">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
+      </svg>
+      <span id="errorAlert"></span>
+    </div>
+
+    <div class="disclaimer" role="note">
+      By submitting, you confirm these answers are truthful and that you understand this tool
+      does not replace professional medical advice.
+    </div>
+
+  </div><!-- /step-7 -->
+
+
+  <!-- ── Navigation Buttons ─────────────────────────────────────────────── -->
+  <div class="step-nav">
+    <button type="button" class="btn-back" id="btnBack" aria-label="Go to previous step">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      Back
+    </button>
+
+    <button type="button" class="btn-next" id="btnNext" aria-label="Continue to next step" disabled>
+      <span id="btnSpinner" class="spinner" style="display:none;" aria-hidden="true"></span>
+      <span id="btnNextLabel">Continue</span>
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </button>
+  </div>
+
+</div><!-- /screening-wrap -->
+</div><!-- /screening-page -->
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay" role="status" aria-live="polite">
+  <div class="loading-spinner" aria-hidden="true"></div>
+  <p class="loading-text">Analysing your responses…</p>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/screening.js') }}"></script>
+{% endblock %}
