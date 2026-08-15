@@ -7,3 +7,16 @@ instance/
 .DS_Store
 .vscode/
 *.log
+
+# ── ML Model artefacts ────────────────────────────────────────────────────
+# Option A (recommended for small models < 50 MB): COMMIT the .pkl files.
+#   → Comment out the two lines below so they are tracked by git.
+#   → Teammates and deployment servers get the model automatically via git pull.
+#
+# Option B (large models / CI pipelines / cloud deploy): IGNORE the .pkl files.
+#   → Un-comment the two lines below.
+#   → Store model.pkl and scaler.pkl in cloud storage (S3, GCS, etc.)
+#     and download them at deploy time via a setup script.
+#
+models/model.pkl
+models/scaler.pkl
