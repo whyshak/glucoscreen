@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}GlucoScreen — Free Diabetes Risk Prescreening{% endblock %}</title>
+  <meta name="description" content="{% block description %}A quick, science-based questionnaire estimates your diabetes risk in minutes. Powered by CDC health indicators.{% endblock %}">
+
+  <!-- Preconnect for fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Design System CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- ── Navbar ─────────────────────────────────────────────────────────── -->
+  <header class="navbar">
+    <div class="container navbar__inner">
+      <a href="{{ url_for('main.index') }}" class="navbar__logo" aria-label="GlucoScreen Home">
+        <div class="navbar__logo-icon" aria-hidden="true">
+          <!-- Drop / glucose icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+               fill="currentColor" aria-hidden="true">
+            <path d="M12 2C6.5 7.2 4 10.9 4 14a8 8 0 0016 0c0-3.1-2.5-6.8-8-12z"/>
+          </svg>
+        </div>
+        GlucoScreen
+      </a>
+
+      <nav class="navbar__nav" aria-label="Main navigation">
+        <a href="{{ url_for('main.index') }}" class="navbar__link">Home</a>
+        <a href="{{ url_for('main.index') }}#how-it-works" class="navbar__link">How it works</a>
+        <a href="{{ url_for('main.index') }}#features" class="navbar__link">Features</a>
+        <a href="{{ url_for('main.screening') }}" class="navbar__cta" id="nav-cta-btn">
+          Start Screening
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ── Main content ───────────────────────────────────────────────────── -->
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- ── Footer ─────────────────────────────────────────────────────────── -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <p class="footer__copy">&copy; 2025 GlucoScreen. For informational purposes only.</p>
+      <nav class="footer__links" aria-label="Footer navigation">
+        <a href="{{ url_for('main.index') }}#how-it-works">How it works</a>
+        <a href="{{ url_for('main.screening') }}">Free Screening</a>
+      </nav>
+    </div>
+  </footer>
+
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>
