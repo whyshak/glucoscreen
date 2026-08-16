@@ -113,25 +113,21 @@
         {% endif %}
       </p>
 
-      <!-- 3-tier visual indicator bar -->
-      <div style="margin-top:1.5rem;">
-        <div
-          style="display:flex;justify-content:space-between;font-size:0.72rem;font-weight:600;color:var(--slate-400);margin-bottom:0.4rem;">
+      <!-- 3-tier visual indicator bar with pointer inside track -->
+      <div class="risk-bar-wrap">
+        <div class="risk-bar-labels">
           <span>Low &lt;30%</span>
           <span>Moderate 30–60%</span>
           <span>High &gt;60%</span>
         </div>
-        <div style="display:flex;height:8px;border-radius:99px;overflow:hidden;gap:2px;">
-          <div style="flex:3;background:var(--risk-low-border);border-radius:99px 0 0 99px;"></div>
-          <div style="flex:3;background:var(--risk-mod-border);"></div>
-          <div style="flex:4;background:var(--risk-high-border);border-radius:0 99px 99px 0;"></div>
-        </div>
-        <!-- Marker -->
-        <div style="position:relative;height:14px;margin-top:2px;">
-          <div style="position:absolute;left:calc({{ risk_pct }}% - 6px);width:12px;height:12px;
-                    border-radius:50%;background:{{ tier_icon_color }};
-                    border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.2);
-                    transition:left 1s cubic-bezier(0.16,1,0.3,1) 0.3s;" aria-hidden="true"></div>
+        <div class="risk-bar-track" role="img" aria-label="Risk category scale with pointer at {{ risk_pct }}%">
+          <div class="risk-bar-segment risk-bar-segment--low"></div>
+          <div class="risk-bar-segment risk-bar-segment--mod"></div>
+          <div class="risk-bar-segment risk-bar-segment--high"></div>
+          <!-- Centered Pointer Marker -->
+          <div class="risk-bar-pointer"
+               style="left: clamp(9px, {{ risk_pct }}%, calc(100% - 9px)); background: {{ tier_icon_color }};"
+               aria-hidden="true"></div>
         </div>
       </div>
 

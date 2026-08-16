@@ -140,7 +140,10 @@
         return form.genHlth !== "";
       case 6: // background
         return form.education !== "" && form.income !== "";
-      case 7: return true;  // review — always ok
+      case 7: { // review — require consent confirmation
+        const consent = document.getElementById("consentCheckbox");
+        return consent ? consent.checked : false;
+      }
       default: return true;
     }
   }
@@ -184,6 +187,11 @@
 
     // Error hidden on step change
     errorAlert.style.display = "none";
+
+    // Scroll to the top of the newly displayed section cleanly
+    if (index > 0) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   }
 
   /* ── Navigation ───────────────────────────────────────────────────────── */
@@ -249,8 +257,12 @@
   sexBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
       form.sex = btn.dataset.val;
-      sexBtns.forEach((b) => b.classList.remove("selected-yes"));
-      btn.classList.add("selected-yes");
+      sexBtns.forEach((b) => {
+        b.classList.remove("selected-yes", "selected-no", "selected");
+        b.setAttribute("aria-pressed", "false");
+      });
+      btn.classList.add("selected", "selected-yes");
+      btn.setAttribute("aria-pressed", "true");
       refreshNext();
     });
   });
@@ -269,7 +281,7 @@
   }
 
   /* ── Yes/No pills (generic) ───────────────────────────────────────────── */
-  document.querySelectorAll(".yn-pill").forEach((pill) => {
+  document.querySelectorAll(".yn-pill[data-field]").forEach((pill) => {
     pill.addEventListener("click", () => {
       const key = pill.dataset.field;
       const val = pill.dataset.val === "true";
@@ -277,10 +289,12 @@
 
       // Update sibling pills
       const group = pill.closest(".yn-pills");
-      group.querySelectorAll(".yn-pill").forEach((p) => {
-        p.classList.remove("selected-yes", "selected-no");
+      group.querySelectorAll(".yn-pill[data-field]").forEach((p) => {
+        p.classList.remove("selected-yes", "selected-no", "selected");
+        p.setAttribute("aria-pressed", "false");
       });
-      pill.classList.add(val ? "selected-yes" : "selected-no");
+      pill.classList.add(val ? "selected-yes" : "selected-no", "selected");
+      pill.setAttribute("aria-pressed", "true");
       refreshNext();
     });
   });
@@ -289,8 +303,12 @@
   document.querySelectorAll(".scale-pill").forEach((pill) => {
     pill.addEventListener("click", () => {
       form.genHlth = pill.dataset.val;
-      document.querySelectorAll(".scale-pill").forEach((p) => p.classList.remove("selected"));
+      document.querySelectorAll(".scale-pill").forEach((p) => {
+        p.classList.remove("selected");
+        p.setAttribute("aria-pressed", "false");
+      });
       pill.classList.add("selected");
+      pill.setAttribute("aria-pressed", "true");
       refreshNext();
     });
   });
@@ -321,6 +339,14 @@
   }
   bindSelect("educationSelect", "education");
   bindSelect("incomeSelect", "income");
+
+  /* ── Consent Checkbox (Step 7) ────────────────────────────────────────── */
+  const consentCheckbox = document.getElementById("consentCheckbox");
+  if (consentCheckbox) {
+    consentCheckbox.addEventListener("change", () => {
+      refreshNext();
+    });
+  }
 
   /* ── Review population ────────────────────────────────────────────────── */
   function populateReview() {
@@ -465,6 +491,7 @@
   }
 
   /* ── Init ─────────────────────────────────────────────────────────────── */
+  if (consentCheckbox) consentCheckbox.checked = false;
   showStep(0);
   metricFields.style.display = "block";
   imperialFields.style.display = "none";
