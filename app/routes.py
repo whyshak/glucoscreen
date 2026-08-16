@@ -245,17 +245,36 @@ def predict():
     #
     model_prediction = model.predict_proba(features_array)
     risk_score = float(model_prediction[0][1])
-    risk_level = "High Risk" if risk_score >= 0.5 else "Low Risk"
-    # =========================================================================
+    
+    # ── Risk level classification (3-tier) ────────────────────────────────
+    # Thresholds:  < 0.30  → Low Risk
+    #              0.30 – 0.60  → Moderate Risk
+    #              > 0.60  → High Risk
+    if risk_score < 0.30:
+        risk_level = "Low Risk"
+    elif risk_score <= 0.60:
+        risk_level = "Moderate Risk"
+    else:
+        risk_level = "High Risk"
 
-
-    message = (
-        "Based on the information you provided, you may be at elevated risk. "
-        "Please consult a healthcare professional for a formal diagnosis."
-        if risk_level == "High Risk"
-        else "Your responses suggest a lower likelihood of diabetes. "
-        "Keep up the healthy habits, and continue routine check-ups."
-    )
+    # ── Response message per risk tier ────────────────────────────────────
+    if risk_level == "High Risk":
+        message = (
+            "Based on the information you provided, you may be at significantly "
+            "elevated risk for diabetes. Please consult a healthcare professional "
+            "as soon as possible for a formal evaluation and personalised plan."
+        )
+    elif risk_level == "Moderate Risk":
+        message = (
+            "Your responses indicate a moderate level of diabetes risk. "
+            "This is a good time to make proactive lifestyle changes — "
+            "diet, exercise and routine blood sugar checks can make a real difference."
+        )
+    else:
+        message = (
+            "Your responses suggest a lower likelihood of diabetes. "
+            "Keep up the healthy habits, and continue routine annual check-ups."
+        )
 
     return jsonify(
         {
