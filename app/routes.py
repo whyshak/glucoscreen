@@ -88,6 +88,116 @@ def get_age_group(age):
 
 
 
+# =============================================================================
+# EXPLANATION HELPER — Dummy data structure for SHAP-based UI
+# =============================================================================
+# This function provides mock explanation data so the UI can be built and
+# tested independently of the (expensive) SHAP computation.
+#
+# Explanation states returned via the `expl_state` key:
+#   "available"   — explanation data is ready to display
+#   "loading"     — SHAP job is still running (async / background)
+#   "unavailable" — SHAP could not be computed or an error occurred
+#
+# TODO (SHAP Integration — Step A):
+#   Replace this entire function (or bypass it) once background SHAP
+#   computation is wired up.  The expected output schema is:
+#
+#   {
+#     "expl_state": "available",          # str
+#     "lowering": [                        # list[dict]  — negative SHAP values
+#       {
+#         "name":      str,               # human-readable feature name
+#         "value":     str,               # formatted user-provided value
+#         "bar_pct":   int,               # 0-100, relative bar width
+#         "influence": str,               # "Strong" | "Moderate" | "Small"
+#       }, ...
+#     ],
+#     "increasing": [                     # list[dict]  — positive SHAP values
+#       { same schema as above }
+#     ],
+#   }
+# =============================================================================
+
+def get_dummy_risk_explanation():
+    """
+    Return a mock SHAP-explanation dict with three possible states.
+
+    Change `_DEMO_STATE` below to test each UI component state:
+        "available"   → shows the two factor sections with dummy data
+        "loading"     → shows the preparation spinner/message
+        "unavailable" → shows the unavailable notice
+    """
+    _DEMO_STATE = "available"  # ← change to "loading" or "unavailable" to test other states
+
+    if _DEMO_STATE != "available":
+        return {"expl_state": _DEMO_STATE}
+
+    # ── Dummy factor rows ─────────────────────────────────────────────────
+    # Each dict mirrors what real SHAP processing will produce.
+    # `bar_pct` is calculated as  abs(shap_val) / max_abs_shap * 100
+    # and must be in the range 0–100 (relative, not a probability).
+    #
+    # TODO (SHAP Integration — Step B):
+    #   Replace the two lists below with the output of a function that:
+    #     1. Loads the precomputed SHAP values from a pickled/cached file
+    #        WITHOUT blocking the primary /predict response.
+    #     2. Extracts the class-1 SHAP values for this specific prediction.
+    #     3. Maps raw feature names to FEATURE_LABELS (see dict below).
+    #     4. Formats each raw feature value into a human-readable string.
+    #     5. Splits features into `lowering` (shap < 0) and
+    #        `increasing` (shap > 0) lists, sorted by abs(shap) desc.
+    #     6. Keeps only the top 3–5 features per side.
+    #     7. Computes bar_pct = round(abs(shap_val) / max_abs * 100).
+    #     8. Maps bar_pct → influence tier:
+    #           >= 65  → "Strong influence"
+    #           30–64  → "Moderate influence"
+    #           < 30   → "Small influence"
+    #
+    # FEATURE_LABELS = {
+    #   "HighBP":              "High Blood Pressure",
+    #   "HighChol":            "High Cholesterol",
+    #   "CholCheck":           "Cholesterol Check",
+    #   "BMI":                 "Body Mass Index (BMI)",
+    #   "Smoker":              "Smoking History",
+    #   "Stroke":              "Stroke History",
+    #   "HeartDiseaseorAttack":"Heart Disease / Attack",
+    #   "PhysActivity":        "Physical Activity",
+    #   "Fruits":              "Daily Fruit Consumption",
+    #   "Veggies":             "Daily Vegetable Consumption",
+    #   "HvyAlcoholConsump":   "Heavy Alcohol Consumption",
+    #   "AnyHealthcare":       "Healthcare Coverage",
+    #   "NoDocbcCost":         "Skipped Doctor Due to Cost",
+    #   "GenHlth":             "General Health Rating",
+    #   "MentHlth":            "Days of Poor Mental Health",
+    #   "PhysHlth":            "Days of Poor Physical Health",
+    #   "DiffWalk":            "Difficulty Walking / Stairs",
+    #   "Sex":                 "Sex",
+    #   "Age":                 "Age Group",
+    #   "Education":           "Education Level",
+    #   "Income":              "Household Income",
+    # }
+
+    return {
+        "expl_state": "available",
+
+        # Factors that pulled the risk score DOWN (negative SHAP)
+        "lowering": [
+            {"name": "Physical Activity",        "value": "Yes",       "bar_pct": 88, "influence": "Strong influence"},
+            {"name": "Daily Vegetable Consumption", "value": "Yes",    "bar_pct": 54, "influence": "Moderate influence"},
+            {"name": "Heavy Alcohol Consumption", "value": "No",       "bar_pct": 27, "influence": "Small influence"},
+        ],
+
+        # Factors that pushed the risk score UP (positive SHAP)
+        "increasing": [
+            {"name": "Body Mass Index (BMI)",     "value": "31.4",     "bar_pct": 95, "influence": "Strong influence"},
+            {"name": "High Blood Pressure",       "value": "Yes",      "bar_pct": 72, "influence": "Strong influence"},
+            {"name": "General Health Rating",     "value": "Fair (4)", "bar_pct": 41, "influence": "Moderate influence"},
+            {"name": "Age Group",                 "value": "50–54",    "bar_pct": 22, "influence": "Small influence"},
+        ],
+    }
+
+
 # ── Landing Page ─────────────────────────────────────────────────────────────
 
 @main.route("/")
@@ -305,9 +415,25 @@ def result():
     except ValueError:
         risk_pct = 0.0
 
+    # ── Explanation data ─────────────────────────────────────────────────
+    # TODO (SHAP Integration — Step C):
+    #   Replace get_dummy_risk_explanation() with a call that reads the
+    #   precomputed SHAP result for THIS prediction from a cache/queue
+    #   (e.g., a file named by session ID, a Redis key, or an in-memory
+    #   store).  If the background job is not yet done, return
+    #   {"expl_state": "loading"}.  If it errored, return
+    #   {"expl_state": "unavailable"}.
+    #
+    #   Example skeleton:
+    #       job_id = request.args.get("job_id", "")
+    #       explanation = fetch_shap_result(job_id)   # your async lookup
+    #
+    explanation = get_dummy_risk_explanation()
+
     return render_template(
         "result.html",
         risk_level=risk_level,
         risk_pct=risk_pct,
         nickname=nickname,
+        explanation=explanation,
     )
