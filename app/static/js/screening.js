@@ -90,7 +90,7 @@
       w = (parseFloat(form.weightLb) || 0) * 0.453592;
     }
     if (h <= 0 || w <= 0) return null;
-    return w / ((h / 100) ** 2);
+    return Math.round(w / ((h / 100) ** 2));
   }
 
   function bmiCategory(bmi) {

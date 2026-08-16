@@ -1652,6 +1652,23 @@ input[type="range"]:active::-webkit-slider-thumb {
   color: #c2410c;
 }
 
+/* ── Empty feature state ────────────────────────────────────────────────── */
+.expl-empty {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--slate-500);
+  padding: 0.85rem 0.5rem;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.expl-empty svg {
+  flex-shrink: 0;
+  opacity: 0.65;
+}
+
 /* ── Individual feature row ────────────────────────────────────────────── */
 .expl-feature {
   display: flex;
@@ -1678,11 +1695,19 @@ input[type="range"]:active::-webkit-slider-thumb {
 
 .expl-feature__value {
   font-size: 0.78rem;
-  color: var(--slate-500);
-  white-space: nowrap;
-  background: rgba(0, 0, 0, 0.04);
-  padding: 0.1rem 0.45rem;
+  font-weight: 500;
+  color: var(--slate-600);
+  background: rgba(0, 0, 0, 0.05);
+  padding: 0.12rem 0.55rem;
   border-radius: 99px;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+  text-align: right;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 /* ── Influence bar ─────────────────────────────────────────────────────── */

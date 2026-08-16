@@ -243,11 +243,12 @@
                 Factors lowering your estimated risk
               </div>
 
+              {% if explanation.lowering and explanation.lowering|length > 0 %}
               {% for f in explanation.lowering %}
               <div class="expl-feature">
                 <div class="expl-feature__meta">
                   <span class="expl-feature__name">{{ f.name }}</span>
-                  <span class="expl-feature__value">{{ f.value }}</span>
+                  <span class="expl-feature__value" title="{{ f.value }}">{{ f.value }}</span>
                 </div>
                 <div class="expl-bar-row">
                   <div class="expl-bar-track" role="progressbar" aria-label="{{ f.name }} influence bar"
@@ -258,6 +259,18 @@
                 </div>
               </div>
               {% endfor %}
+              {% else %}
+              <div class="expl-empty">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  aria-hidden="true">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                <span>No major factors lowering estimated risk were identified from your responses.</span>
+              </div>
+              {% endif %}
             </div><!-- /lowering panel -->
 
             <!-- Increasing panel -->
@@ -273,11 +286,12 @@
                 Factors increasing your estimated risk
               </div>
 
+              {% if explanation.increasing and explanation.increasing|length > 0 %}
               {% for f in explanation.increasing %}
               <div class="expl-feature">
                 <div class="expl-feature__meta">
                   <span class="expl-feature__name">{{ f.name }}</span>
-                  <span class="expl-feature__value">{{ f.value }}</span>
+                  <span class="expl-feature__value" title="{{ f.value }}">{{ f.value }}</span>
                 </div>
                 <div class="expl-bar-row">
                   <div class="expl-bar-track" role="progressbar" aria-label="{{ f.name }} influence bar"
@@ -288,6 +302,18 @@
                 </div>
               </div>
               {% endfor %}
+              {% else %}
+              <div class="expl-empty">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  aria-hidden="true">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                <span>No major factors increasing estimated risk were identified from your responses.</span>
+              </div>
+              {% endif %}
             </div><!-- /increasing panel -->
 
           </div><!-- /expl-panels -->
@@ -436,7 +462,7 @@
           '<div class="expl-feature">',
           '  <div class="expl-feature__meta">',
           '    <span class="expl-feature__name">' + escHtml(f.name) + '</span>',
-          '    <span class="expl-feature__value">' + escHtml(f.value) + '</span>',
+          '    <span class="expl-feature__value" title="' + escHtml(f.value) + '">' + escHtml(f.value) + '</span>',
           '  </div>',
           '  <div class="expl-bar-row">',
           '    <div class="expl-bar-track" role="progressbar"',
@@ -450,13 +476,37 @@
         ].join('\n');
       }
 
-      var loweringItems = (explanation.lowering || []).map(function (f) {
-        return factorHTML(f, "lowering");
-      }).join('');
+      var loweringItems = (explanation.lowering && explanation.lowering.length > 0)
+        ? explanation.lowering.map(function (f) {
+          return factorHTML(f, "lowering");
+        }).join('')
+        : [
+          '<div class="expl-empty">',
+          '  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"',
+          '       stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">',
+          '    <circle cx="12" cy="12" r="10"/>',
+          '    <line x1="12" y1="8" x2="12" y2="12"/>',
+          '    <line x1="12" y1="16" x2="12.01" y2="16"/>',
+          '  </svg>',
+          '  <span>No major factors lowering estimated risk were identified from your responses.</span>',
+          '</div>'
+        ].join('\n');
 
-      var increasingItems = (explanation.increasing || []).map(function (f) {
-        return factorHTML(f, "increasing");
-      }).join('');
+      var increasingItems = (explanation.increasing && explanation.increasing.length > 0)
+        ? explanation.increasing.map(function (f) {
+          return factorHTML(f, "increasing");
+        }).join('')
+        : [
+          '<div class="expl-empty">',
+          '  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"',
+          '       stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">',
+          '    <circle cx="12" cy="12" r="10"/>',
+          '    <line x1="12" y1="8" x2="12" y2="12"/>',
+          '    <line x1="12" y1="16" x2="12.01" y2="16"/>',
+          '  </svg>',
+          '  <span>No major factors increasing estimated risk were identified from your responses.</span>',
+          '</div>'
+        ].join('\n');
 
       return [
         '<div class="expl-panels">',
