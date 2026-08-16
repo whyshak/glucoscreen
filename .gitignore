@@ -20,3 +20,4 @@ instance/
 #
 models/model.pkl
 models/scaler.pkl
+*.patch

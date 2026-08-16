@@ -518,9 +518,14 @@
       <span id="errorAlert"></span>
     </div>
 
-    <div class="disclaimer" role="note">
-      By submitting, you confirm these answers are truthful and that you understand this tool
-      does not replace professional medical advice.
+    <!-- Required Consent Checkbox -->
+    <div class="consent-group">
+      <label class="consent-label" for="consentCheckbox">
+        <input type="checkbox" id="consentCheckbox" class="consent-checkbox" required aria-required="true" />
+        <span class="consent-text">
+          By submitting, you confirm these answers are truthful and that you understand this tool does not replace professional medical advice.
+        </span>
+      </label>
     </div>
 
   </div><!-- /step-7 -->
