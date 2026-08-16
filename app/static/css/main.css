@@ -33,9 +33,14 @@
   --slate-900: #0f172a;
 
   /* Semantic */
-  --risk-high-bg:   #fef2f2;
-  --risk-high-text: #dc2626;
+  --risk-high-bg:     #fef2f2;
+  --risk-high-text:   #dc2626;
   --risk-high-border: #fecaca;
+
+  --risk-mod-bg:     #fffbeb;
+  --risk-mod-text:   #d97706;
+  --risk-mod-border: #fde68a;
+
   --risk-low-bg:    #f0fdf4;
   --risk-low-text:  #16a34a;
   --risk-low-border: #bbf7d0;
@@ -1050,6 +1055,7 @@ input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.2); cursor
   margin-bottom: 1.5rem;
 }
 .result-card--high { border-color: var(--risk-high-border); }
+.result-card--mod  { border-color: var(--risk-mod-border); }
 .result-card--low  { border-color: var(--risk-low-border); }
 
 .result-badge {
@@ -1068,6 +1074,11 @@ input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.2); cursor
   background: var(--risk-high-bg);
   color: var(--risk-high-text);
   border: 1px solid var(--risk-high-border);
+}
+.result-badge--mod {
+  background: var(--risk-mod-bg);
+  color: var(--risk-mod-text);
+  border: 1px solid var(--risk-mod-border);
 }
 .result-badge--low {
   background: var(--risk-low-bg);
@@ -1100,6 +1111,7 @@ input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.2); cursor
   transition: stroke-dashoffset 1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s;
 }
 .result-score-ring__fill--high { stroke: var(--risk-high-text); }
+.result-score-ring__fill--mod  { stroke: var(--risk-mod-text); }
 .result-score-ring__fill--low  { stroke: var(--risk-low-text); }
 
 .result-score-text {
