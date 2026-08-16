@@ -439,10 +439,12 @@
       }
 
       const data = await res.json();
-      // Redirect to result page with query params
+      // Redirect to result page with query params including job_id & predicted_class
       const params = new URLSearchParams({
         risk_level: data.risk_level,
         risk_score: data.risk_score,
+        job_id: data.job_id || "",
+        predicted_class: data.predicted_class !== undefined ? data.predicted_class : 1,
       });
       window.location.href = "/result?" + params.toString();
 

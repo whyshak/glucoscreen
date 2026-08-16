@@ -301,12 +301,12 @@
 
         {# ── State: loading ───────────────────────────────────────────── #}
         {% elif explanation.expl_state == "loading" %}
-        <div class="expl-state-card" role="status" aria-live="polite">
+        <div id="explLoading" class="expl-state-card" role="status" aria-live="polite">
           <div class="expl-state-spinner" aria-hidden="true"></div>
           <p class="expl-state-title">Personalised explanation is being prepared&hellip;</p>
           <p class="expl-state-sub">
-            The model explanation takes a moment to compute. You can refresh this
-            page in a few seconds to check if it is ready.
+            Analysing which factors influenced the model's estimate&hellip;
+            This may take 1&ndash;5 minutes and will update automatically.
           </p>
         </div>
 
@@ -385,55 +385,187 @@
     });
   })();
 
-  // ── 2. Explanation loading → available transition ─────────────────────────
+  // ── 2. Explanation section — state machine ───────────────────────────────
   //
-  // When expl_state == "available" the server embeds both:
-  //   #explLoading  — spinner card (visible on page load)
-  //   #explAvailable — panels div (hidden on page load, opacity:0)
-  //
-  // Timeline:
-  //   0 ms   — loading spinner is visible (initial HTML state)
-  //   2400ms — fade OUT the loading card  (300ms)
-  //   2700ms — swap display, fade IN the panels (400ms)
-  //   3100ms — stagger-animate each influence bar  (80ms apart)
+  // Three server-rendered states:
+  //   "available" → #explAvailable panels are in the DOM (hidden);
+  //                 show a brief cosmetic spinner then reveal them.
+  //   "loading"   → #explLoading spinner is in the DOM;
+  //                 poll /shap_status until done, then inject + reveal.
+  //   else        → unavailable card is already visible — nothing to do.
   (function () {
+    var FADE = 300;   // ms for cross-fade transitions
+    var BAR_STAGGER = 80;  // ms between each influence bar animating in
+
+    // ── Helper: reveal #explAvailable panels (bars already in DOM) ────────
+    function revealPanels() {
     var loading = document.getElementById("explLoading");
     var available = document.getElementById("explAvailable");
-    if (!loading || !available) return;   // not the "available" state — nothing to do
+      if (!available) return;
 
-    var LOADING_DURATION = 30000;   // ms to show the spinner
-    var FADE_DURATION = 300;    // ms cross-fade
-    var BAR_STAGGER = 80;     // ms between each bar animating
-
-    // ── Step 1: fade out the spinner ────────────────────────────────────
-    setTimeout(function () {
-      loading.style.transition = "opacity " + FADE_DURATION + "ms ease";
+      // Fade out the spinner (if present)
+      if (loading) {
+        loading.style.transition = "opacity " + FADE + "ms ease";
       loading.style.opacity = "0";
+        setTimeout(function () { loading.style.display = "none"; }, FADE);
+      }
 
-      // ── Step 2: hide spinner, reveal panels ──────────────────────────
       setTimeout(function () {
-        loading.style.display = "none";
         available.style.display = "block";
         available.removeAttribute("aria-hidden");
-
-        // Trigger reflow so the browser registers opacity:0 before
-        // starting the transition (otherwise the fade won't fire).
-        void available.offsetWidth;
-
-        available.style.transition = "opacity " + FADE_DURATION + "ms ease";
+        void available.offsetWidth; // force reflow before transition starts
+        available.style.transition = "opacity " + FADE + "ms ease";
         available.style.opacity = "1";
 
-        // ── Step 3: stagger-animate each influence bar ────────────────
+        // Stagger-animate each influence bar
         var bars = available.querySelectorAll(".expl-bar-fill[data-bar-pct]");
         bars.forEach(function (bar, i) {
           setTimeout(function () {
             var pct = parseFloat(bar.dataset.barPct) || 0;
             bar.style.width = Math.min(100, Math.max(0, pct)) + "%";
-          }, FADE_DURATION + i * BAR_STAGGER);
+          }, FADE + i * BAR_STAGGER);
         });
+      }, loading ? FADE : 0);
+    }
 
-      }, FADE_DURATION);
-    }, LOADING_DURATION);
+    // ── Helper: inject fetched explanation HTML into #explAvailable ───────
+    function buildPanelHTML(explanation) {
+      function factorHTML(f, side) {
+        return [
+          '<div class="expl-feature">',
+          '  <div class="expl-feature__meta">',
+          '    <span class="expl-feature__name">' + escHtml(f.name) + '</span>',
+          '    <span class="expl-feature__value">' + escHtml(f.value) + '</span>',
+          '  </div>',
+          '  <div class="expl-bar-row">',
+          '    <div class="expl-bar-track" role="progressbar"',
+          '         aria-label="' + escHtml(f.name) + ' influence bar"',
+          '         aria-valuenow="' + f.bar_pct + '" aria-valuemin="0" aria-valuemax="100">',
+          '      <div class="expl-bar-fill" data-bar-pct="' + f.bar_pct + '"></div>',
+          '    </div>',
+          '    <span class="expl-tier">' + escHtml(f.influence) + '</span>',
+          '  </div>',
+          '</div>'
+        ].join('\n');
+      }
+
+      var loweringItems = (explanation.lowering || []).map(function (f) {
+        return factorHTML(f, "lowering");
+      }).join('');
+
+      var increasingItems = (explanation.increasing || []).map(function (f) {
+        return factorHTML(f, "increasing");
+      }).join('');
+
+      return [
+        '<div class="expl-panels">',
+        '  <div class="expl-panel expl-panel--lowering" role="region"',
+        '       aria-label="Factors lowering your estimated risk">',
+        '    <div class="expl-panel__title">',
+        '      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"',
+        '        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">',
+        '        <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />',
+        '        <polyline points="17 18 23 18 23 12" />',
+        '      </svg>',
+        '      Factors lowering your estimated risk',
+        '    </div>',
+        loweringItems,
+        '  </div>',
+        '  <div class="expl-panel expl-panel--increasing" role="region"',
+        '       aria-label="Factors increasing your estimated risk">',
+        '    <div class="expl-panel__title">',
+        '      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"',
+        '        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">',
+        '        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />',
+        '        <polyline points="17 6 23 6 23 12" />',
+        '      </svg>',
+        '      Factors increasing your estimated risk',
+        '    </div>',
+        increasingItems,
+        '  </div>',
+        '</div>'
+      ].join('\n');
+    }
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    // ── "available" path: data is already in the DOM ──────────────────────
+    var available = document.getElementById("explAvailable");
+    if (available) {
+      // Brief 1.5 s cosmetic spinner so the page doesn't feel like it
+      // skipped straight past the explanation section.
+      setTimeout(revealPanels, 1500);
+      return;
+    }
+
+    // ── "loading" path: poll /shap_status until the job finishes ─────────
+    var loading = document.getElementById("explLoading");
+    if (!loading) return; // unavailable card — nothing to do
+
+    var jobId = "{{ job_id | default('') }}";
+    if (!jobId) return; // no job to poll
+
+    var POLL_INTERVAL = 4000;  // ms between polls
+    var MAX_POLLS = 75;    // give up after 5 minutes (75 × 4 s)
+    var polls = 0;
+
+    function showUnavailable() {
+      loading.style.transition = "opacity " + FADE + "ms ease";
+      loading.style.opacity = "0";
+      setTimeout(function () {
+        loading.innerHTML = [
+          '<div class="expl-state-icon--unavail" aria-hidden="true">',
+          '  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"',
+          '       viewBox="0 0 24 24" fill="none" stroke="currentColor"',
+          '       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',
+          '    <circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/>',
+          '  </svg>',
+          '</div>',
+          '<p class="expl-state-title">Personalised explanation is currently unavailable.</p>',
+          '<p class="expl-state-sub">We were unable to generate a model explanation for this result. Your risk score above remains accurate.</p>'
+        ].join('');
+        loading.style.opacity = "1";
+      }, FADE);
+    }
+
+    function poll() {
+      polls++;
+      if (polls > MAX_POLLS) { showUnavailable(); return; }
+
+      fetch("/shap_status?job_id=" + encodeURIComponent(jobId))
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.state === "available" && data.explanation) {
+            // Inject the freshly built panels before revealing them
+            var container = document.createElement("div");
+            container.id = "explAvailable";
+            container.style.display = "none";
+            container.style.opacity = "0";
+            container.setAttribute("aria-hidden", "true");
+            container.innerHTML = buildPanelHTML(data.explanation);
+            loading.parentNode.insertBefore(container, loading);
+            revealPanels();
+          } else if (data.state === "unavailable") {
+            showUnavailable();
+          } else {
+            // Still loading — try again after the interval
+            setTimeout(poll, POLL_INTERVAL);
+          }
+        })
+        .catch(function () {
+          // Network error — retry
+          setTimeout(poll, POLL_INTERVAL);
+        });
+    }
+
+    // Kick off the first poll after a short delay so the page can settle
+    setTimeout(poll, POLL_INTERVAL);
   })();
 </script>
 {% endblock %}

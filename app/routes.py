@@ -9,7 +9,8 @@ Routes:
 """
 
 import os
-import random
+import threading
+import uuid
 
 from flask import (
     Blueprint,
@@ -41,14 +42,26 @@ import numpy as np
 # This is the standard, performant pattern for serving ML models in Flask.
 
 #
-#loading the model
 _models_dir = os.path.join(os.path.dirname(__file__), '..', 'models')
+#loading the model
 model_path = os.path.join(_models_dir, 'best_svm_model.pkl')
 model = joblib.load(model_path)
 
 #loading the scaler
 scaler_path = os.path.join(_models_dir, 'standard_scaler.pkl')
 scaler = joblib.load(scaler_path)
+
+#loading the shap explainer
+shap_explainer_path = os.path.join(_models_dir, 'shap_explainer.pkl')
+shap_explainer = joblib.load(shap_explainer_path)
+
+features_array = np.array([])
+
+# In-memory cache for background SHAP jobs.
+# Keys are UUIDs (job_id strings); values are dicts with:
+#   {"state": "loading" | "available" | "unavailable",
+#    "explanation": <dict> | None}
+_shap_cache: dict = {}
 
 # =============================================================================
 
@@ -89,112 +102,162 @@ def get_age_group(age):
 
 
 # =============================================================================
-# EXPLANATION HELPER — Dummy data structure for SHAP-based UI
+# EXPLANATION HELPER — Processes real SHAP values into UI-ready dicts
 # =============================================================================
-# This function provides mock explanation data so the UI can be built and
-# tested independently of the (expensive) SHAP computation.
-#
 # Explanation states returned via the `expl_state` key:
 #   "available"   — explanation data is ready to display
-#   "loading"     — SHAP job is still running (async / background)
+#   "loading"     — SHAP job is still running (background thread)
 #   "unavailable" — SHAP could not be computed or an error occurred
-#
-# TODO (SHAP Integration — Step A):
-#   Replace this entire function (or bypass it) once background SHAP
-#   computation is wired up.  The expected output schema is:
-#
-#   {
-#     "expl_state": "available",          # str
-#     "lowering": [                        # list[dict]  — negative SHAP values
-#       {
-#         "name":      str,               # human-readable feature name
-#         "value":     str,               # formatted user-provided value
-#         "bar_pct":   int,               # 0-100, relative bar width
-#         "influence": str,               # "Strong" | "Moderate" | "Small"
-#       }, ...
-#     ],
-#     "increasing": [                     # list[dict]  — positive SHAP values
-#       { same schema as above }
-#     ],
-#   }
 # =============================================================================
 
-def get_dummy_risk_explanation():
+# Maps raw CDC BRFSS column names → human-readable labels shown in the UI.
+FEATURE_LABELS = {
+    "HighBP":               "High Blood Pressure",
+    "HighChol":             "High Cholesterol",
+    "CholCheck":            "Cholesterol Check",
+    "BMI":                  "Body Mass Index (BMI)",
+    "Smoker":               "Smoking History",
+    "Stroke":               "Stroke History",
+    "HeartDiseaseorAttack": "Heart Disease / Attack",
+    "PhysActivity":         "Physical Activity",
+    "Fruits":               "Daily Fruit Consumption",
+    "Veggies":              "Daily Vegetable Consumption",
+    "HvyAlcoholConsump":    "Heavy Alcohol Consumption",
+    "AnyHealthcare":        "Healthcare Coverage",
+    "NoDocbcCost":          "Skipped Doctor Due to Cost",
+    "GenHlth":              "General Health Rating",
+    "MentHlth":             "Days of Poor Mental Health",
+    "PhysHlth":             "Days of Poor Physical Health",
+    "DiffWalk":             "Difficulty Walking / Stairs",
+    "Sex":                  "Sex",
+    "Age":                  "Age Group",
+    "Education":            "Education Level",
+    "Income":               "Household Income",
+}
+
+
+FEATURE_NAMES = list(FEATURE_LABELS.keys())
+
+
+def _influence_label(bar_pct: int) -> str:
+    """Map a relative bar percentage to a human-readable influence tier."""
+    if bar_pct >= 65:
+        return "Strong influence"
+    elif bar_pct >= 30:
+        return "Moderate influence"
+    return "Small influence"
+
+
+def _format_value(name: str, raw) -> str:
     """
-    Return a mock SHAP-explanation dict with three possible states.
-
-    Change `_DEMO_STATE` below to test each UI component state:
-        "available"   → shows the two factor sections with dummy data
-        "loading"     → shows the preparation spinner/message
-        "unavailable" → shows the unavailable notice
+    Convert a raw numeric feature value to a human-readable string.
+    Binary features (0/1) are rendered as Yes/No; others are formatted
+    as plain numbers.
     """
-    _DEMO_STATE = "available"  # ← change to "loading" or "unavailable" to test other states
+    binary_features = {
+        "HighBP", "HighChol", "CholCheck", "Smoker", "Stroke",
+        "HeartDiseaseorAttack", "PhysActivity", "Fruits", "Veggies",
+        "HvyAlcoholConsump", "AnyHealthcare", "NoDocbcCost", "DiffWalk",
+        "Sex",
+    }
+    if name in binary_features:
+        return "Yes" if raw else "No"
+    # Continuous / ordinal — show rounded value
+    try:
+        return str(round(float(raw), 1))
+    except (TypeError, ValueError):
+        return str(raw)
 
-    if _DEMO_STATE != "available":
-        return {"expl_state": _DEMO_STATE}
 
-    # ── Dummy factor rows ─────────────────────────────────────────────────
-    # Each dict mirrors what real SHAP processing will produce.
-    # `bar_pct` is calculated as  abs(shap_val) / max_abs_shap * 100
-    # and must be in the range 0–100 (relative, not a probability).
-    #
-    # TODO (SHAP Integration — Step B):
-    #   Replace the two lists below with the output of a function that:
-    #     1. Loads the precomputed SHAP values from a pickled/cached file
-    #        WITHOUT blocking the primary /predict response.
-    #     2. Extracts the class-1 SHAP values for this specific prediction.
-    #     3. Maps raw feature names to FEATURE_LABELS (see dict below).
-    #     4. Formats each raw feature value into a human-readable string.
-    #     5. Splits features into `lowering` (shap < 0) and
-    #        `increasing` (shap > 0) lists, sorted by abs(shap) desc.
-    #     6. Keeps only the top 3–5 features per side.
-    #     7. Computes bar_pct = round(abs(shap_val) / max_abs * 100).
-    #     8. Maps bar_pct → influence tier:
-    #           >= 65  → "Strong influence"
-    #           30–64  → "Moderate influence"
-    #           < 30   → "Small influence"
-    #
-    # FEATURE_LABELS = {
-    #   "HighBP":              "High Blood Pressure",
-    #   "HighChol":            "High Cholesterol",
-    #   "CholCheck":           "Cholesterol Check",
-    #   "BMI":                 "Body Mass Index (BMI)",
-    #   "Smoker":              "Smoking History",
-    #   "Stroke":              "Stroke History",
-    #   "HeartDiseaseorAttack":"Heart Disease / Attack",
-    #   "PhysActivity":        "Physical Activity",
-    #   "Fruits":              "Daily Fruit Consumption",
-    #   "Veggies":             "Daily Vegetable Consumption",
-    #   "HvyAlcoholConsump":   "Heavy Alcohol Consumption",
-    #   "AnyHealthcare":       "Healthcare Coverage",
-    #   "NoDocbcCost":         "Skipped Doctor Due to Cost",
-    #   "GenHlth":             "General Health Rating",
-    #   "MentHlth":            "Days of Poor Mental Health",
-    #   "PhysHlth":            "Days of Poor Physical Health",
-    #   "DiffWalk":            "Difficulty Walking / Stairs",
-    #   "Sex":                 "Sex",
-    #   "Age":                 "Age Group",
-    #   "Education":           "Education Level",
-    #   "Income":              "Household Income",
-    # }
+def get_risk_explanation(shap_values, class_index: int, raw_features=None, top_n: int = 5) -> dict:
+    """
+    Build a UI-ready explanation dict from a real SHAP Explanation object.
+
+    Args:
+        shap_values:   shap.Explanation or array returned by shap_explainer(features_array).
+        class_index:   Index of the predicted class (0 = No Diabetes, 1 = Diabetes).
+        raw_features:  Original unscaled user input values for friendly display.
+        top_n:         Maximum number of features to include per side (default 5).
+
+    Returns:
+        {
+          "expl_state": "available",
+          "lowering":   [list of factor dicts — negative SHAP, sorted desc by |shap|],
+          "increasing": [list of factor dicts — positive SHAP, sorted desc by |shap|],
+        }
+    """
+    # ── Extract per-feature SHAP values for the predicted class ──────────
+    if hasattr(shap_values, "values"):
+        vals = shap_values.values
+        if vals.ndim == 3:
+            sv = vals[0, :, class_index]
+        elif vals.ndim == 2:
+            sv = vals[0, :]
+        else:
+            sv = vals
+    elif isinstance(shap_values, (list, tuple)):
+        arr = shap_values[class_index]
+        sv = arr[0] if getattr(arr, "ndim", 1) == 2 else arr
+    else:
+        sv = np.array(shap_values)
+        if sv.ndim >= 2:
+            sv = sv[0]
+
+    # Feature names
+    if hasattr(shap_values, "feature_names") and shap_values.feature_names is not None:
+        feature_names = list(shap_values.feature_names)
+    else:
+        feature_names = FEATURE_NAMES
+
+    # Raw user values
+    if raw_features is not None:
+        raw_data = raw_features
+    elif hasattr(shap_values, "data") and shap_values.data is not None:
+        raw_data = shap_values.data[0] if getattr(shap_values.data, "ndim", 1) == 2 else shap_values.data
+    else:
+        raw_data = [None] * len(sv)
+
+    # ── Relative bar widths ───────────────────────────────────────────────
+    abs_sv = [abs(v) for v in sv]
+    max_abs = max(abs_sv) if any(abs_sv) else 1.0        # avoid div-by-zero
+
+    # ── Build sorted factor lists ─────────────────────────────────────────
+    lowering = []   # negative SHAP → reduces risk
+    increasing = [] # positive SHAP → raises risk
+
+    for feat_name, shap_val, raw_val in zip(feature_names, sv, raw_data):
+        if shap_val == 0:
+            continue
+        bar_pct = round(abs(shap_val) / max_abs * 100)
+        row = {
+            "name":      FEATURE_LABELS.get(feat_name, feat_name),
+            "value":     _format_value(feat_name, raw_val),
+            "bar_pct":   bar_pct,
+            "influence": _influence_label(bar_pct),
+        }
+        if shap_val < 0:
+            lowering.append((abs(shap_val), row))
+        else:
+            increasing.append((abs(shap_val), row))
+
+    # Sort each list descending by |shap| and keep top_n entries
+    lowering   = [r for _, r in sorted(lowering,   reverse=True)][:top_n]
+    increasing = [r for _, r in sorted(increasing, reverse=True)][:top_n]
+
+    # ── Return explanation for the predicted class ─────────────────────
+    # If class_index == 0 (No Diabetes) → lower_list shows factors that
+    # *reduce* the probability of diabetes; upper_list shows factors that
+    # *increase* it.
+    # If class_index == 1 (Diabetes) → interpretation flips:
+    # lower_list = factors that increased diabetes probability
+    # upper_list = factors that decreased diabetes probability
+    if class_index == 0:
+        lowering, increasing = increasing, lowering
 
     return {
         "expl_state": "available",
-
-        # Factors that pulled the risk score DOWN (negative SHAP)
-        "lowering": [
-            {"name": "Physical Activity",        "value": "Yes",       "bar_pct": 88, "influence": "Strong influence"},
-            {"name": "Daily Vegetable Consumption", "value": "Yes",    "bar_pct": 54, "influence": "Moderate influence"},
-            {"name": "Heavy Alcohol Consumption", "value": "No",       "bar_pct": 27, "influence": "Small influence"},
-        ],
-
-        # Factors that pushed the risk score UP (positive SHAP)
-        "increasing": [
-            {"name": "Body Mass Index (BMI)",     "value": "31.4",     "bar_pct": 95, "influence": "Strong influence"},
-            {"name": "High Blood Pressure",       "value": "Yes",      "bar_pct": 72, "influence": "Strong influence"},
-            {"name": "General Health Rating",     "value": "Fair (4)", "bar_pct": 41, "influence": "Moderate influence"},
-            {"name": "Age Group",                 "value": "50–54",    "bar_pct": 22, "influence": "Small influence"},
-        ],
+        "lowering":   lowering,
+        "increasing": increasing,
     }
 
 
@@ -320,6 +383,7 @@ def predict():
         hvy_alcohol, any_healthcare, no_doc_bc_cost, gen_hlth,
         ment_hlth, phys_hlth, diff_walk, sex, age, education, income,
     ]
+    raw_features = list(features)
 
     features_to_scale = [bmi, ment_hlth, phys_hlth]
 
@@ -332,7 +396,7 @@ def predict():
     #
 
     # applying standar scaler to the features tobe scaled
-    features_to_scale_array  = np.array(features_to_scale).reshape(1, -1)  # shape: (1, 21)
+    features_to_scale_array  = np.array(features_to_scale).reshape(1, -1)  # shape: (1, 3)
     features_scaled = scaler.transform(features_to_scale_array)   # apply scaler
     
     # replacing the original feature values with the scaled features
@@ -340,6 +404,7 @@ def predict():
     features[14] = features_scaled[0][1]
     features[15] = features_scaled[0][2]
 
+    global features_array
     # converting the features list to a numpy array
     features_array  = np.array(features).reshape(1, -1)  # shape: (1, 21)
 
@@ -386,13 +451,65 @@ def predict():
             "Keep up the healthy habits, and continue routine annual check-ups."
         )
 
+    # ── Determine predicted class index ───────────────────────────────────
+    # class 0 = No Diabetes, class 1 = Diabetes / Pre-diabetes
+    predicted_class = int(model.predict(features_array)[0])
+
+    # ── Launch SHAP computation in a background thread ─────────────────────
+    # SHAP on an SVM kernel can take 2-5 minutes; we run it off the
+    # request thread so the user is never blocked.
+    job_id = str(uuid.uuid4())
+    _shap_cache[job_id] = {"state": "loading", "explanation": None}
+
+    def _run_shap(jid: str, feat_arr, cls_idx: int, raw_feats):
+        try:
+            sv = shap_explainer(feat_arr)
+            expl = get_risk_explanation(sv, cls_idx, raw_features=raw_feats)
+            _shap_cache[jid] = {"state": "available", "explanation": expl}
+        except Exception as exc:  # noqa: BLE001
+            import traceback
+            traceback.print_exc()
+            _shap_cache[jid] = {"state": "unavailable", "explanation": None}
+
+    thread = threading.Thread(
+        target=_run_shap,
+        args=(job_id, features_array.copy(), predicted_class, raw_features),
+        daemon=True,
+    )
+    thread.start()
+
     return jsonify(
         {
             "risk_level": risk_level,
             "risk_score": risk_score,
             "message": message,
+            "job_id": job_id,
+            "predicted_class": predicted_class,
         }
     )
+
+
+# ── SHAP Status Endpoint ─────────────────────────────────────────────────────
+
+@main.route("/shap_status")
+def shap_status():
+    """
+    Lightweight polling endpoint for the result page.
+
+    Query parameters:
+        job_id (str): UUID returned by /predict.
+
+    Returns JSON:
+        {
+          "state": "loading" | "available" | "unavailable",
+          "explanation": <dict> | null   (null when not yet available)
+        }
+    """
+    job_id = request.args.get("job_id", "")
+    entry = _shap_cache.get(job_id)
+    if entry is None:
+        return jsonify({"state": "unavailable", "explanation": None})
+    return jsonify({"state": entry["state"], "explanation": entry.get("explanation")})
 
 
 # ── Result Page ──────────────────────────────────────────────────────────────
@@ -409,26 +526,32 @@ def result():
     risk_level = request.args.get("risk_level", "Unknown")
     risk_score = request.args.get("risk_score", "0")
     nickname = session.get("nickname", "")
+    # class_index: 0 = No Diabetes, 1 = Diabetes/Pre-diabetes
+    class_index = int(request.args.get("predicted_class", 1))
 
     try:
         risk_pct = round(float(risk_score) * 100, 1)
     except ValueError:
         risk_pct = 0.0
 
-    # ── Explanation data ─────────────────────────────────────────────────
-    # TODO (SHAP Integration — Step C):
-    #   Replace get_dummy_risk_explanation() with a call that reads the
-    #   precomputed SHAP result for THIS prediction from a cache/queue
-    #   (e.g., a file named by session ID, a Redis key, or an in-memory
-    #   store).  If the background job is not yet done, return
-    #   {"expl_state": "loading"}.  If it errored, return
-    #   {"expl_state": "unavailable"}.
-    #
-    #   Example skeleton:
-    #       job_id = request.args.get("job_id", "")
-    #       explanation = fetch_shap_result(job_id)   # your async lookup
-    #
-    explanation = get_dummy_risk_explanation()
+    # ── Explanation data ──────────────────────────────────────────────────
+    # The SHAP job was launched in the background by /predict and its result
+    # stored in _shap_cache keyed by job_id.
+    #   "loading"     → thread still running; UI shows a spinner
+    #   "available"   → explanation is ready to render
+    #   "unavailable" → SHAP failed; UI shows a graceful notice
+    job_id = request.args.get("job_id", "")
+    cache_entry = _shap_cache.get(job_id)
+
+    if cache_entry is None:
+        # Unknown job — treat as unavailable
+        explanation = {"expl_state": "unavailable"}
+    elif cache_entry["state"] == "loading":
+        explanation = {"expl_state": "loading"}
+    elif cache_entry["state"] == "available":
+        explanation = cache_entry["explanation"]
+    else:
+        explanation = {"expl_state": "unavailable"}
 
     return render_template(
         "result.html",
@@ -436,4 +559,5 @@ def result():
         risk_pct=risk_pct,
         nickname=nickname,
         explanation=explanation,
+        job_id=job_id,
     )
