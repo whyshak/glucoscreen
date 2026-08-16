@@ -1,0 +1,231 @@
+{% extends "_base.html" %}
+
+{% block title %}
+  {% if risk_level == "High Risk" %}Your Risk: High — GlucoScreen
+  {% elif risk_level == "Moderate Risk" %}Your Risk: Moderate — GlucoScreen
+  {% else %}Your Risk: Low — GlucoScreen
+  {% endif %}
+{% endblock %}
+
+{% block description %}Your personalised diabetes risk screening result from GlucoScreen.{% endblock %}
+
+{% block extra_head %}
+<style>
+  body { background: linear-gradient(160deg, var(--brand-50) 0%, #ffffff 400px); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{# ── Derive tier-specific CSS class tokens once ── #}
+{% if risk_level == "High Risk" %}
+  {% set tier = "high" %}
+  {% set tier_icon_color = "var(--risk-high-text)" %}
+{% elif risk_level == "Moderate Risk" %}
+  {% set tier = "mod" %}
+  {% set tier_icon_color = "var(--risk-mod-text)" %}
+{% else %}
+  {% set tier = "low" %}
+  {% set tier_icon_color = "var(--risk-low-text)" %}
+{% endif %}
+
+<div class="result-page">
+<div class="result-wrap">
+
+  <!-- ── Greeting ─────────────────────────────────────────────────── -->
+  {% if nickname %}
+  <p style="text-align:center;font-size:0.95rem;color:var(--slate-400);margin-bottom:1.25rem;">
+    Here are your results, <strong style="color:var(--slate-700);">{{ nickname }}</strong>.
+  </p>
+  {% endif %}
+
+  <!-- ── Risk Card ─────────────────────────────────────────────────── -->
+  <div class="result-card result-card--{{ tier }}">
+
+    <!-- Risk level badge -->
+    <div class="result-badge result-badge--{{ tier }}" role="status" aria-live="polite">
+      {% if risk_level == "High Risk" %}
+        <!-- Warning triangle -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        High Risk
+      {% elif risk_level == "Moderate Risk" %}
+        <!-- Info circle -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        Moderate Risk
+      {% else %}
+        <!-- Checkmark -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        Low Risk
+      {% endif %}
+    </div>
+
+    <!-- Animated ring score -->
+    <div class="result-score-ring" role="img" aria-label="Risk score: {{ risk_pct }}%">
+      <svg viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle class="result-score-ring__track" cx="75" cy="75" r="65"/>
+        <circle
+          class="result-score-ring__fill result-score-ring__fill--{{ tier }}"
+          cx="75" cy="75" r="65"
+          id="scoreRingFill"
+          data-pct="{{ risk_pct }}"
+        />
+      </svg>
+      <div class="result-score-text">
+        <div class="result-score-num">{{ risk_pct }}%</div>
+        <div class="result-score-sub">risk score</div>
+      </div>
+    </div>
+
+    <!-- Title & message -->
+    <h1 class="result-title">
+      {% if risk_level == "High Risk" %}
+        Elevated diabetes risk detected
+      {% elif risk_level == "Moderate Risk" %}
+        Moderate diabetes risk detected
+      {% else %}
+        Lower risk — keep it up!
+      {% endif %}
+    </h1>
+
+    <p class="result-message">
+      {% if risk_level == "High Risk" %}
+        Based on the information you provided, you may be at significantly elevated risk
+        for diabetes. Please consult a qualified healthcare professional for a formal
+        evaluation and personalised guidance.
+      {% elif risk_level == "Moderate Risk" %}
+        Your responses indicate a moderate level of diabetes risk. This is a good time
+        to make proactive lifestyle changes — diet, exercise and routine blood sugar
+        checks can make a real difference before risk increases further.
+      {% else %}
+        Your responses suggest a lower likelihood of diabetes. Keep up your healthy habits,
+        and continue routine check-ups with your doctor.
+      {% endif %}
+    </p>
+
+    <!-- 3-tier visual indicator bar -->
+    <div style="margin-top:1.5rem;">
+      <div style="display:flex;justify-content:space-between;font-size:0.72rem;font-weight:600;color:var(--slate-400);margin-bottom:0.4rem;">
+        <span>Low  &lt;30%</span>
+        <span>Moderate  30–60%</span>
+        <span>High  &gt;60%</span>
+      </div>
+      <div style="display:flex;height:8px;border-radius:99px;overflow:hidden;gap:2px;">
+        <div style="flex:3;background:var(--risk-low-border);border-radius:99px 0 0 99px;"></div>
+        <div style="flex:3;background:var(--risk-mod-border);"></div>
+        <div style="flex:4;background:var(--risk-high-border);border-radius:0 99px 99px 0;"></div>
+      </div>
+      <!-- Marker -->
+      <div style="position:relative;height:14px;margin-top:2px;">
+        <div style="position:absolute;left:calc({{ risk_pct }}% - 6px);width:12px;height:12px;
+                    border-radius:50%;background:{{ tier_icon_color }};
+                    border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.2);
+                    transition:left 1s cubic-bezier(0.16,1,0.3,1) 0.3s;"
+             aria-hidden="true"></div>
+      </div>
+    </div>
+
+  </div><!-- /result-card -->
+
+
+  <!-- ── Recommendations ───────────────────────────────────────────── -->
+  <div class="recs-card">
+    <div class="recs-card__title">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+           stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 3v1m0 16v1M4.22 4.22l.7.7m12.16 12.16.7.7M3 12h1m16 0h1m-4.22-7.78.7-.7M6.92 17.08l-.7.7"/>
+        <circle cx="12" cy="12" r="4"/>
+      </svg>
+      Recommended next steps
+    </div>
+
+    <ul class="recs-list" aria-label="Recommendations">
+
+      {% macro rec_icon() %}
+        <span class="rec-dot" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </span>
+      {% endmacro %}
+
+      {% if risk_level == "High Risk" %}
+        <li class="rec-item">{{ rec_icon() }}<span>Schedule a fasting blood glucose or HbA1c test with your doctor as soon as possible.</span></li>
+        <li class="rec-item">{{ rec_icon() }}<span>Aim for at least 150 minutes of moderate-intensity exercise per week to improve insulin sensitivity.</span></li>
+        <li class="rec-item">{{ rec_icon() }}<span>Reduce intake of ultra-processed foods, refined carbohydrates, and sugary drinks.</span></li>
+        <li class="rec-item">{{ rec_icon() }}<span>Even a 5–7% reduction in body weight can significantly lower risk for Type 2 diabetes.</span></li>
+        <li class="rec-item">{{ rec_icon() }}<span>Monitor your blood pressure and cholesterol alongside blood sugar at your next check-up.</span></li>
+
+      {% elif risk_level == "Moderate Risk" %}
+        <li class="rec-item">{{ rec_icon() }}<span>Book a routine check-up and ask your doctor about a blood sugar test (HbA1c or fasting glucose).</span></li>
+        <li class="rec-item">{{ rec_icon() }}<span>Increase physical activity gradually — even 30-minute walks, 5 days a week, make a measurable difference.</span></li>
+        <li class="rec-item">{{ rec_icon() }}<span>Swap refined carbs (white bread, sugary drinks) for high-fibre alternatives (whole grains, legumes, vegetables).</span></li>
+        <li class="rec-item">{{ rec_icon() }}<span>Track your meals for one week to identify hidden sugar and processed food habits.</span></li>
+
+      {% else %}
+        <li class="rec-item">{{ rec_icon() }}<span>Continue your current healthy habits — regular activity and a balanced diet are your best protection.</span></li>
+        <li class="rec-item">{{ rec_icon() }}<span>Schedule routine annual health check-ups including blood sugar tests.</span></li>
+        <li class="rec-item">{{ rec_icon() }}<span>Stay hydrated, prioritise sleep, and manage stress — all help maintain healthy blood sugar levels.</span></li>
+
+      {% endif %}
+    </ul>
+  </div>
+
+  <!-- ── Actions ───────────────────────────────────────────────────── -->
+  <div class="result-actions">
+    <a href="{{ url_for('main.screening') }}" class="btn-primary" id="retake-btn">
+      Take screening again
+    </a>
+    <a href="{{ url_for('main.index') }}" class="btn-secondary" id="home-btn">
+      Back to home
+    </a>
+  </div>
+
+  <!-- Disclaimer -->
+  <div class="disclaimer" role="note" style="margin-top:1.5rem;">
+    <strong>Medical disclaimer:</strong> This result is generated by a machine learning model for
+    informational purposes only. It is <em>not</em> a medical diagnosis. Always consult a licensed
+    healthcare professional before making any health decisions.
+  </div>
+
+</div><!-- /result-wrap -->
+</div><!-- /result-page -->
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Animate the risk ring on page load
+  (function () {
+    var fill = document.getElementById("scoreRingFill");
+    if (!fill) return;
+    var circumference = 2 * Math.PI * 65; // ≈ 408.4
+    var pct = parseFloat(fill.dataset.pct) / 100;
+    var offset = circumference * (1 - pct);
+    fill.style.strokeDasharray  = circumference;
+    fill.style.strokeDashoffset = circumference;
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        fill.style.strokeDashoffset = offset;
+      });
+    });
+  })();
+</script>
+{% endblock %}
