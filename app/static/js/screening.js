@@ -33,47 +33,47 @@
 
   // Form data store (mirrors backend field names)
   const form = {
-    nickname:      "",
-    unit:          "metric",
-    heightCm:      "",
-    heightFt:      "",
-    heightIn:      "",
-    weightKg:      "",
-    weightLb:      "",
-    age:           "",
-    sex:           "",
-    highBp:        null,
-    highChol:      null,
-    cholCheck:     null,
-    smoker:        null,
-    stroke:        null,
-    heartDisease:  null,
-    physActivity:  null,
-    fruits:        null,
-    veggies:       null,
-    hvyAlcohol:    null,
-    diffWalk:      null,
+    nickname: "",
+    unit: "metric",
+    heightCm: "",
+    heightFt: "",
+    heightIn: "",
+    weightKg: "",
+    weightLb: "",
+    age: "",
+    sex: "",
+    highBp: null,
+    highChol: null,
+    cholCheck: null,
+    smoker: null,
+    stroke: null,
+    heartDisease: null,
+    physActivity: null,
+    fruits: null,
+    veggies: null,
+    hvyAlcohol: null,
+    diffWalk: null,
     anyHealthcare: null,
-    noDocbcCost:   null,
-    genHlth:       "",
-    mentHlth:      0,
-    physHlth:      0,
-    education:     "",
-    income:        "",
+    noDocbcCost: null,
+    genHlth: "",
+    mentHlth: 0,
+    physHlth: 0,
+    education: "",
+    income: "",
   };
 
   /* ── DOM Refs ─────────────────────────────────────────────────────────── */
-  const stepPanes       = document.querySelectorAll(".step-pane");
-  const progressHeader  = document.getElementById("progressHeader");
-  const progressFill    = document.getElementById("progressFill");
-  const progressName    = document.getElementById("progressStepName");
+  const stepPanes = document.querySelectorAll(".step-pane");
+  const progressHeader = document.getElementById("progressHeader");
+  const progressFill = document.getElementById("progressFill");
+  const progressName = document.getElementById("progressStepName");
   const progressCounter = document.getElementById("progressCounter");
-  const btnBack         = document.getElementById("btnBack");
-  const btnNext         = document.getElementById("btnNext");
-  const btnNextLabel    = document.getElementById("btnNextLabel");
-  const btnSpinner      = document.getElementById("btnSpinner");
-  const errorAlert      = document.getElementById("errorAlert");
-  const loadingOverlay  = document.getElementById("loadingOverlay");
+  const btnBack = document.getElementById("btnBack");
+  const btnNext = document.getElementById("btnNext");
+  const btnNextLabel = document.getElementById("btnNextLabel");
+  const btnSpinner = document.getElementById("btnSpinner");
+  const errorAlert = document.getElementById("errorAlert");
+  const loadingOverlay = document.getElementById("loadingOverlay");
 
   /* ── Helpers ──────────────────────────────────────────────────────────── */
   function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
@@ -90,13 +90,13 @@
       w = (parseFloat(form.weightLb) || 0) * 0.453592;
     }
     if (h <= 0 || w <= 0) return null;
-    return w / ((h / 100) ** 2);
+    return Math.round(w / ((h / 100) ** 2));
   }
 
   function bmiCategory(bmi) {
     if (bmi < 18.5) return "Underweight";
-    if (bmi < 25)   return "Normal weight";
-    if (bmi < 30)   return "Overweight";
+    if (bmi < 25) return "Normal weight";
+    if (bmi < 30) return "Overweight";
     return "Obese";
   }
 
@@ -151,9 +151,9 @@
       pane.style.display = i === index ? "block" : "none";
     });
 
-    const isFirst   = index === 0;
-    const isLast    = index === SECTIONS.length - 1;
-    const dataStep  = clamp(index, 1, TOTAL_DATA_STEPS);
+    const isFirst = index === 0;
+    const isLast = index === SECTIONS.length - 1;
+    const dataStep = clamp(index, 1, TOTAL_DATA_STEPS);
 
     // Progress header
     if (index === 0) {
@@ -161,8 +161,8 @@
     } else {
       progressHeader.style.display = "block";
       const pct = Math.round((index / (SECTIONS.length - 1)) * 100);
-      progressFill.style.width   = pct + "%";
-      progressName.textContent   = SECTIONS[index];
+      progressFill.style.width = pct + "%";
+      progressName.textContent = SECTIONS[index];
       progressCounter.textContent = `Step ${index} of ${SECTIONS.length - 2}`;
     }
 
@@ -212,7 +212,7 @@
 
   /* ── Unit toggle (Step 1) ─────────────────────────────────────────────── */
   const unitBtns = document.querySelectorAll(".unit-toggle__btn");
-  const metricFields   = document.getElementById("metricFields");
+  const metricFields = document.getElementById("metricFields");
   const imperialFields = document.getElementById("imperialFields");
 
   unitBtns.forEach((btn) => {
@@ -220,7 +220,7 @@
       form.unit = btn.dataset.unit;
       unitBtns.forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
-      metricFields.style.display   = form.unit === "metric"   ? "block" : "none";
+      metricFields.style.display = form.unit === "metric" ? "block" : "none";
       imperialFields.style.display = form.unit === "imperial" ? "block" : "none";
       updateBMIDisplay();
       refreshNext();
@@ -344,35 +344,35 @@
     };
 
     const rows = {
-      "rv-nickname":     form.nickname || "Not provided",
-      "rv-age":          form.age || "—",
-      "rv-sex":          sexText,
-      "rv-bmi":          bmiText,
-      "rv-highBp":       fmtBool(form.highBp),
-      "rv-highChol":     fmtBool(form.highChol),
-      "rv-cholCheck":    fmtBool(form.cholCheck),
-      "rv-smoker":       fmtBool(form.smoker),
-      "rv-stroke":       fmtBool(form.stroke),
+      "rv-nickname": form.nickname || "Not provided",
+      "rv-age": form.age || "—",
+      "rv-sex": sexText,
+      "rv-bmi": bmiText,
+      "rv-highBp": fmtBool(form.highBp),
+      "rv-highChol": fmtBool(form.highChol),
+      "rv-cholCheck": fmtBool(form.cholCheck),
+      "rv-smoker": fmtBool(form.smoker),
+      "rv-stroke": fmtBool(form.stroke),
       "rv-heartDisease": fmtBool(form.heartDisease),
       "rv-physActivity": fmtBool(form.physActivity),
-      "rv-fruits":       fmtBool(form.fruits),
-      "rv-veggies":      fmtBool(form.veggies),
-      "rv-hvyAlcohol":   fmtBool(form.hvyAlcohol),
-      "rv-diffWalk":     fmtBool(form.diffWalk),
+      "rv-fruits": fmtBool(form.fruits),
+      "rv-veggies": fmtBool(form.veggies),
+      "rv-hvyAlcohol": fmtBool(form.hvyAlcohol),
+      "rv-diffWalk": fmtBool(form.diffWalk),
       "rv-anyHealthcare": fmtBool(form.anyHealthcare),
-      "rv-noDocbcCost":  fmtBool(form.noDocbcCost),
-      "rv-genHlth":      GENHLTH_LABELS[form.genHlth] || "—",
-      "rv-mentHlth":     form.mentHlth + " days",
-      "rv-physHlth":     form.physHlth + " days",
-      "rv-education":    EDU_LABELS[form.education] || "—",
-      "rv-income":       INC_LABELS[form.income] || "—",
+      "rv-noDocbcCost": fmtBool(form.noDocbcCost),
+      "rv-genHlth": GENHLTH_LABELS[form.genHlth] || "—",
+      "rv-mentHlth": form.mentHlth + " days",
+      "rv-physHlth": form.physHlth + " days",
+      "rv-education": EDU_LABELS[form.education] || "—",
+      "rv-income": INC_LABELS[form.income] || "—",
     };
 
     Object.entries(rows).forEach(([id, val]) => {
       const el = document.getElementById(id);
       if (!el) return;
       const isYes = val === "Yes";
-      const isNo  = val === "No";
+      const isNo = val === "No";
       if (isYes || isNo) {
         el.innerHTML = `<span class="review-badge review-badge--${isYes ? 'yes' : 'no'}">${val}</span>`;
       } else {
@@ -401,36 +401,36 @@
       : (parseFloat(form.weightLb) || 0) * 0.453592;
 
     const payload = {
-      nickname:      form.nickname.trim() || null,
-      age:           parseInt(form.age, 10),
-      sex:           parseInt(form.sex, 10) === 1 ? 1 : 0,
-      heightCm:      Math.round(h),
-      weightKg:      Math.round(w * 10) / 10,
-      highBp:        !!form.highBp,
-      highChol:      !!form.highChol,
-      cholCheck:     !!form.cholCheck,
-      smoker:        !!form.smoker,
-      stroke:        !!form.stroke,
-      heartDisease:  !!form.heartDisease,
-      physActivity:  !!form.physActivity,
-      fruits:        !!form.fruits,
-      veggies:       !!form.veggies,
-      hvyAlcohol:    !!form.hvyAlcohol,
+      nickname: form.nickname.trim() || null,
+      age: parseInt(form.age, 10),
+      sex: parseInt(form.sex, 10) === 1 ? 1 : 0,
+      heightCm: Math.round(h),
+      weightKg: Math.round(w * 10) / 10,
+      highBp: !!form.highBp,
+      highChol: !!form.highChol,
+      cholCheck: !!form.cholCheck,
+      smoker: !!form.smoker,
+      stroke: !!form.stroke,
+      heartDisease: !!form.heartDisease,
+      physActivity: !!form.physActivity,
+      fruits: !!form.fruits,
+      veggies: !!form.veggies,
+      hvyAlcohol: !!form.hvyAlcohol,
       anyHealthcare: !!form.anyHealthcare,
-      noDocbcCost:   !!form.noDocbcCost,
-      genHlth:       parseInt(form.genHlth, 10) || 3,
-      mentHlth:      parseInt(form.mentHlth, 10) || 0,
-      physHlth:      parseInt(form.physHlth, 10) || 0,
-      diffWalk:      !!form.diffWalk,
-      education:     parseInt(form.education, 10) || 4,
-      income:        parseInt(form.income, 10) || 5,
+      noDocbcCost: !!form.noDocbcCost,
+      genHlth: parseInt(form.genHlth, 10) || 3,
+      mentHlth: parseInt(form.mentHlth, 10) || 0,
+      physHlth: parseInt(form.physHlth, 10) || 0,
+      diffWalk: !!form.diffWalk,
+      education: parseInt(form.education, 10) || 4,
+      income: parseInt(form.income, 10) || 5,
     };
 
     try {
       const res = await fetch("/predict", {
-        method:  "POST",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify(payload),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -439,10 +439,12 @@
       }
 
       const data = await res.json();
-      // Redirect to result page with query params
+      // Redirect to result page with query params including job_id & predicted_class
       const params = new URLSearchParams({
         risk_level: data.risk_level,
         risk_score: data.risk_score,
+        job_id: data.job_id || "",
+        predicted_class: data.predicted_class !== undefined ? data.predicted_class : 1,
       });
       window.location.href = "/result?" + params.toString();
 
@@ -464,7 +466,7 @@
 
   /* ── Init ─────────────────────────────────────────────────────────────── */
   showStep(0);
-  metricFields.style.display   = "block";
+  metricFields.style.display = "block";
   imperialFields.style.display = "none";
 
 })();
