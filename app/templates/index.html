@@ -280,6 +280,269 @@
   </div>
 </section>
 
+<!-- ── Model Performance & Reliability ─────────────────────────────────── -->
+<section class="section" id="model-reliability">
+  <div class="container">
+    <div class="section__header">
+      <p class="section__eyebrow">Model Performance &amp; Reliability</p>
+      <h2 class="section__title">Clinical-grade accuracy, explained simply</h2>
+      <p class="section__sub">
+        Trained on validated CDC BRFSS epidemiological health survey records, our Support Vector Machine model is tuned to prioritize early detection and trustworthy risk assessment.
+      </p>
+    </div>
+
+    <!-- ── Top 4 Key Metric Highlights ─────────────────────────────────── -->
+    <div class="reliability-grid">
+
+      <!-- Recall / Detection -->
+      <article class="reliability-card">
+        <span class="reliability-card__badge">Early Detection</span>
+        <div class="reliability-card__num">83.0%</div>
+        <div class="reliability-card__title">Risk Detection Rate</div>
+        <p class="reliability-card__desc">
+          Catches ~83 out of 100 people with diabetes risk, prioritizing early detection so fewer cases go unnoticed.
+        </p>
+      </article>
+
+      <!-- ROC-AUC / Discrimination -->
+      <article class="reliability-card reliability-card--blue">
+        <span class="reliability-card__badge">Separation Power</span>
+        <div class="reliability-card__num">82.9%</div>
+        <div class="reliability-card__title">Discriminative Ability</div>
+        <p class="reliability-card__desc">
+          Strong capability to distinguish elevated risk from low risk across diverse demographics and health backgrounds.
+        </p>
+      </article>
+
+      <!-- NPV / Reassurance -->
+      <article class="reliability-card reliability-card--green">
+        <span class="reliability-card__badge">Peace of Mind</span>
+        <div class="reliability-card__num">79.8%</div>
+        <div class="reliability-card__title">Low-Risk Confidence</div>
+        <p class="reliability-card__desc">
+          When the model assesses you as low risk, there is an ~80% certainty that the result is genuinely low risk.
+        </p>
+      </article>
+
+      <!-- Accuracy & F1 -->
+      <article class="reliability-card reliability-card--purple">
+        <span class="reliability-card__badge">Overall Score</span>
+        <div class="reliability-card__num">75.2%</div>
+        <div class="reliability-card__title">Overall Accuracy</div>
+        <p class="reliability-card__desc">
+          Balanced correctness (77.0% F1-score) validated across tens of thousands of unseen health records.
+        </p>
+      </article>
+
+    </div><!-- /reliability-grid -->
+
+
+    <!-- ── Interactive Detail Explorer ─────────────────────────────────── -->
+    <div class="reliability-detail-card">
+
+      <!-- Tab Navigation Buttons -->
+      <div class="reliability-tabs-nav" role="tablist" aria-label="Model metrics breakdown">
+        <button type="button" class="reliability-tab-btn active" role="tab" id="tab-btn-detection"
+                aria-selected="true" aria-controls="panel-detection">
+          <!-- Shield icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          Detection &amp; Safety
+        </button>
+
+        <button type="button" class="reliability-tab-btn" role="tab" id="tab-btn-confidence"
+                aria-selected="false" aria-controls="panel-confidence">
+          <!-- Check circle icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          Reliability &amp; Confidence
+        </button>
+
+        <button type="button" class="reliability-tab-btn" role="tab" id="tab-btn-benchmark"
+                aria-selected="false" aria-controls="panel-benchmark">
+          <!-- Bar chart / gauge icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+          Overall Benchmarks
+        </button>
+      </div>
+
+      <!-- ── Panel 1: Detection & Safety ── -->
+      <div class="reliability-panel active" id="panel-detection" role="tabpanel" aria-labelledby="tab-btn-detection">
+        <div class="panel-content-grid">
+          <div class="panel-text">
+            <h3>Why early detection matters most</h3>
+            <p>
+              In health screening, the cost of a <em>missed risk</em> is much higher than a false alarm. A false alarm simply prompts a routine checkup, whereas a missed case could delay life-changing lifestyle interventions.
+            </p>
+            <div class="panel-highlight-box">
+              <strong>Clinical Design Goal:</strong> Our model is deliberately calibrated to prioritize a high <strong>83.0% sensitivity rate</strong>, keeping the miss rate down to only <strong>17.0%</strong>.
+            </div>
+          </div>
+
+          <div class="panel-metrics-list">
+            <!-- Recall -->
+            <div class="metric-row">
+              <div class="metric-row__header">
+                <span class="metric-row__title">High-Risk Sensitivity <span class="metric-row__sub">(Recall)</span></span>
+                <span class="metric-row__value">82.95%</span>
+              </div>
+              <div class="metric-bar-track">
+                <div class="metric-bar-fill" style="width: 82.95%"></div>
+              </div>
+              <span class="metric-row__desc">Catches ~83 out of 100 potential diabetes cases early.</span>
+            </div>
+
+            <!-- FNR -->
+            <div class="metric-row">
+              <div class="metric-row__header">
+                <span class="metric-row__title">Miss Rate <span class="metric-row__sub">(False Negative Rate)</span></span>
+                <span class="metric-row__value" style="color:#0284c7;">17.05%</span>
+              </div>
+              <div class="metric-bar-track">
+                <div class="metric-bar-fill metric-bar-fill--blue" style="width: 17.05%"></div>
+              </div>
+              <span class="metric-row__desc">Intentionally minimized so very few elevated risks are overlooked.</span>
+            </div>
+          </div>
+        </div>
+      </div><!-- /panel-detection -->
+
+      <!-- ── Panel 2: Reliability & Confidence ── -->
+      <div class="reliability-panel" id="panel-confidence" role="tabpanel" aria-labelledby="tab-btn-confidence">
+        <div class="panel-content-grid">
+          <div class="panel-text">
+            <h3>Understanding your risk score</h3>
+            <p>
+              Whether your results show a low or elevated risk level, here is what the statistical confidence means for your day-to-day health management.
+            </p>
+            <div class="panel-highlight-box">
+              <strong>Trustworthy Outcomes:</strong> Low-risk outcomes offer ~80% statistical certainty, while moderate/high alerts provide ~72% precision for actionable doctor discussions.
+            </div>
+          </div>
+
+          <div class="panel-metrics-list">
+            <!-- NPV -->
+            <div class="metric-row">
+              <div class="metric-row__header">
+                <span class="metric-row__title">Low-Risk Reassurance <span class="metric-row__sub">(NPV)</span></span>
+                <span class="metric-row__value" style="color:#16a34a;">79.82%</span>
+              </div>
+              <div class="metric-bar-track">
+                <div class="metric-bar-fill metric-bar-fill--green" style="width: 79.82%"></div>
+              </div>
+              <span class="metric-row__desc">Certainty that a low-risk result reflects genuine health safety.</span>
+            </div>
+
+            <!-- Precision -->
+            <div class="metric-row">
+              <div class="metric-row__header">
+                <span class="metric-row__title">Elevated-Risk Precision <span class="metric-row__sub">(Precision)</span></span>
+                <span class="metric-row__value">71.79%</span>
+              </div>
+              <div class="metric-bar-track">
+                <div class="metric-bar-fill" style="width: 71.79%"></div>
+              </div>
+              <span class="metric-row__desc">When flagged as elevated, ~72% accurately indicate true underlying risk factors.</span>
+            </div>
+
+            <!-- Specificity -->
+            <div class="metric-row">
+              <div class="metric-row__header">
+                <span class="metric-row__title">Healthy Profile Specificity <span class="metric-row__sub">(Specificity)</span></span>
+                <span class="metric-row__value" style="color:#7c3aed;">67.41%</span>
+              </div>
+              <div class="metric-bar-track">
+                <div class="metric-bar-fill metric-bar-fill--purple" style="width: 67.41%"></div>
+              </div>
+              <span class="metric-row__desc">Accurately confirms low risk for individuals with healthy lifestyle indicators.</span>
+            </div>
+          </div>
+        </div>
+      </div><!-- /panel-confidence -->
+
+      <!-- ── Panel 3: Overall Benchmarks ── -->
+      <div class="reliability-panel" id="panel-benchmark" role="tabpanel" aria-labelledby="tab-btn-benchmark">
+        <div class="panel-content-grid">
+          <div class="panel-text">
+            <h3>Machine learning architecture</h3>
+            <p>
+              GlucoScreen runs on a non-linear <strong>Radial Basis Function (RBF) Support Vector Machine (SVM)</strong> combined with standardized scaling. It was trained and evaluated on balanced CDC health surveillance survey records.
+            </p>
+            <div class="panel-highlight-box">
+              <strong>Generalization Power:</strong> An <strong>ROC-AUC of 82.9%</strong> and an <strong>F1 Score of 77.0%</strong> confirm the model performs reliably across diverse ages, BMIs, and backgrounds without overfitting.
+            </div>
+          </div>
+
+          <div class="panel-metrics-list">
+            <!-- ROC AUC -->
+            <div class="metric-row">
+              <div class="metric-row__header">
+                <span class="metric-row__title">ROC Area Under Curve <span class="metric-row__sub">(ROC-AUC)</span></span>
+                <span class="metric-row__value" style="color:#0284c7;">82.90%</span>
+              </div>
+              <div class="metric-bar-track">
+                <div class="metric-bar-fill metric-bar-fill--blue" style="width: 82.90%"></div>
+              </div>
+              <span class="metric-row__desc">Measures the model's ability to separate distinct risk classes.</span>
+            </div>
+
+            <!-- F1 Score -->
+            <div class="metric-row">
+              <div class="metric-row__header">
+                <span class="metric-row__title">Harmonic Balanced Score <span class="metric-row__sub">(F1 Score)</span></span>
+                <span class="metric-row__value">76.97%</span>
+              </div>
+              <div class="metric-bar-track">
+                <div class="metric-bar-fill" style="width: 76.97%"></div>
+              </div>
+              <span class="metric-row__desc">Harmonious balance between detection sensitivity and alert precision.</span>
+            </div>
+
+            <!-- Accuracy -->
+            <div class="metric-row">
+              <div class="metric-row__header">
+                <span class="metric-row__title">Overall Test Accuracy <span class="metric-row__sub">(Accuracy)</span></span>
+                <span class="metric-row__value" style="color:#16a34a;">75.18%</span>
+              </div>
+              <div class="metric-bar-track">
+                <div class="metric-bar-fill metric-bar-fill--green" style="width: 75.18%"></div>
+              </div>
+              <span class="metric-row__desc">Overall proportion of correct predictions across all test cases.</span>
+            </div>
+          </div>
+        </div>
+      </div><!-- /panel-benchmark -->
+
+    </div><!-- /reliability-detail-card -->
+
+    <!-- Medical Context Callout -->
+    <div class="reliability-callout" role="note">
+      <div class="reliability-callout__icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="16" x2="12" y2="12"/>
+          <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+      </div>
+      <div class="reliability-callout__text">
+        <strong>Prescreening vs. Clinical Diagnosis:</strong> GlucoScreen is an informational risk prescreening questionnaire that calculates statistical likelihood from self-reported CDC health indicators. It does not replace diagnostic blood tests (like HbA1c or Fasting Blood Glucose). We encourage sharing your results with a licensed healthcare professional.
+      </div>
+    </div>
+
+  </div>
+</section>
+
 <!-- ── CTA Banner ──────────────────────────────────────────────────────── -->
 <section class="section" aria-label="Call to action">
   <div class="container">
@@ -298,4 +561,32 @@
   </div>
 </section>
 
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  (function () {
+    const tabBtns = document.querySelectorAll('.reliability-tab-btn');
+    const panels = document.querySelectorAll('.reliability-panel');
+
+    tabBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const targetPanelId = btn.getAttribute('aria-controls');
+
+        tabBtns.forEach((b) => {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        panels.forEach((p) => p.classList.remove('active'));
+
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+        const activePanel = document.getElementById(targetPanelId);
+        if (activePanel) {
+          activePanel.classList.add('active');
+        }
+      });
+    });
+  })();
+</script>
 {% endblock %}

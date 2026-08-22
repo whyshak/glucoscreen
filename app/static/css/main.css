@@ -714,6 +714,329 @@ main {
   line-height: 1.6;
 }
 
+/* ── Model Performance & Reliability Section ────────────────────────────── */
+.reliability-grid {
+  display: grid;
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
+}
+
+@media (min-width: 640px) {
+  .reliability-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .reliability-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.reliability-card {
+  background: #fff;
+  border: 1px solid var(--slate-200);
+  border-radius: 18px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.reliability-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--brand-400), var(--brand-600));
+}
+
+.reliability-card--blue::before {
+  background: linear-gradient(90deg, #38bdf8, #0284c7);
+}
+
+.reliability-card--green::before {
+  background: linear-gradient(90deg, #4ade80, #16a34a);
+}
+
+.reliability-card--purple::before {
+  background: linear-gradient(90deg, #a78bfa, #7c3aed);
+}
+
+.reliability-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--brand-200);
+}
+
+.reliability-card__num {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--slate-900);
+  line-height: 1.1;
+  margin-bottom: 0.35rem;
+}
+
+.reliability-card__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--slate-800);
+  margin-bottom: 0.15rem;
+}
+
+.reliability-card__badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--brand-700);
+  background: var(--brand-50);
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+  align-self: flex-start;
+}
+
+.reliability-card--blue .reliability-card__badge {
+  color: #0369a1;
+  background: #f0f9ff;
+}
+
+.reliability-card--green .reliability-card__badge {
+  color: #15803d;
+  background: #f0fdf4;
+}
+
+.reliability-card--purple .reliability-card__badge {
+  color: #6d28d9;
+  background: #f5f3ff;
+}
+
+.reliability-card__desc {
+  font-size: 0.82rem;
+  color: var(--slate-500);
+  line-height: 1.55;
+  margin-top: auto;
+}
+
+/* ── Reliability Interactive Detail Card ────────────────────────────────── */
+.reliability-detail-card {
+  background: #fff;
+  border: 1px solid var(--slate-200);
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+  .reliability-detail-card {
+    padding: 2.5rem;
+  }
+}
+
+.reliability-tabs-nav {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--slate-200);
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.reliability-tabs-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.reliability-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.15rem;
+  border-radius: 999px;
+  border: 1px solid var(--slate-200);
+  background: #fff;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--slate-600);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.reliability-tab-btn:hover {
+  border-color: var(--brand-300);
+  color: var(--brand-700);
+  background: var(--brand-50);
+}
+
+.reliability-tab-btn.active {
+  background: var(--brand-600);
+  color: #fff;
+  border-color: var(--brand-600);
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.3);
+}
+
+.reliability-panel {
+  display: none;
+  animation: fadeIn 0.25s ease;
+}
+
+.reliability-panel.active {
+  display: block;
+}
+
+.panel-content-grid {
+  display: grid;
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .panel-content-grid {
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items: center;
+  }
+}
+
+.panel-text h3 {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--slate-900);
+  margin-bottom: 0.75rem;
+}
+
+.panel-text p {
+  font-size: 0.9rem;
+  color: var(--slate-600);
+  line-height: 1.65;
+  margin-bottom: 1rem;
+}
+
+.panel-highlight-box {
+  background: var(--slate-50);
+  border-left: 3px solid var(--brand-500);
+  padding: 0.85rem 1.1rem;
+  border-radius: 0 12px 12px 0;
+  font-size: 0.84rem;
+  color: var(--slate-700);
+  line-height: 1.55;
+}
+
+/* Metric Bars */
+.panel-metrics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.metric-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.metric-row__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.84rem;
+}
+
+.metric-row__title {
+  font-weight: 600;
+  color: var(--slate-800);
+}
+
+.metric-row__sub {
+  font-size: 0.75rem;
+  color: var(--slate-400);
+  margin-left: 0.35rem;
+}
+
+.metric-row__value {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--brand-700);
+}
+
+.metric-bar-track {
+  height: 9px;
+  background: var(--slate-100);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.metric-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--brand-400), var(--brand-600));
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.metric-bar-fill--blue {
+  background: linear-gradient(90deg, #38bdf8, #0284c7);
+}
+
+.metric-bar-fill--green {
+  background: linear-gradient(90deg, #4ade80, #16a34a);
+}
+
+.metric-bar-fill--purple {
+  background: linear-gradient(90deg, #a78bfa, #7c3aed);
+}
+
+.metric-row__desc {
+  font-size: 0.76rem;
+  color: var(--slate-500);
+  line-height: 1.4;
+}
+
+/* Informational Callout Box */
+.reliability-callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: var(--brand-50);
+  border: 1px solid var(--brand-200);
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+}
+
+.reliability-callout__icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--brand-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.reliability-callout__text {
+  font-size: 0.85rem;
+  color: var(--brand-900);
+  line-height: 1.55;
+}
+
+.reliability-callout__text strong {
+  color: var(--brand-950);
+  font-weight: 700;
+}
+
 /* ── CTA Banner ─────────────────────────────────────────────────────────── */
 .cta-banner {
   background: linear-gradient(135deg, var(--brand-600) 0%, var(--brand-800) 100%);
