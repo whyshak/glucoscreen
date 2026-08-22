@@ -280,6 +280,124 @@
   </div>
 </section>
 
+<!-- ── Model Reliability Section ──────────────────────────────────────── -->
+<section class="section" id="reliability" aria-label="Model Reliability and Performance">
+  <div class="container">
+    <div class="section__header">
+      <p class="section__eyebrow">Model Reliability &amp; Performance</p>
+      <h2 class="section__title">How reliable is this screening tool?</h2>
+      <p class="section__sub">
+        Understand how our machine learning model was validated and how its predictions perform in practice.
+      </p>
+    </div>
+
+    {% set perf = model_performance or {} %}
+    <div class="perf-card">
+      <div class="perf-content">
+        <p class="perf-intro-text">
+          GlucoScreen uses a Support Vector Machine (SVM) algorithm validated against standardized public health survey data.
+          Below is a plain-language summary of how its prediction reliability was measured:
+        </p>
+
+        <!-- Metric Cards Grid -->
+        <div class="perf-grid">
+
+          <!-- 1. Overall Reliability (Accuracy) -->
+          {% set m1 = perf.get('overall_reliability', {}) %}
+          <div class="perf-metric-card">
+            <div class="perf-metric-top">
+              <span class="perf-metric-badge perf-metric-badge--teal">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                {{ m1.get('badge', 'High Accuracy') }}
+              </span>
+              <span class="perf-metric-score">{{ m1.get('score_pct', 84) }}%</span>
+            </div>
+            <h3 class="perf-metric-title">{{ m1.get('title', 'Overall Reliability') }}</h3>
+            <div class="perf-bar-track">
+              <div class="perf-bar-fill perf-bar-fill--teal" style="width: {{ m1.get('score_pct', 84) }}%;"></div>
+            </div>
+            <p class="perf-metric-summary"><strong>{{ m1.get('summary', '') }}</strong></p>
+            <p class="perf-metric-desc">{{ m1.get('description', '') }}</p>
+          </div>
+
+          <!-- 2. Early Risk Detection (Sensitivity) -->
+          {% set m2 = perf.get('detection_rate', {}) %}
+          <div class="perf-metric-card">
+            <div class="perf-metric-top">
+              <span class="perf-metric-badge perf-metric-badge--blue">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
+                {{ m2.get('badge', 'High Sensitivity') }}
+              </span>
+              <span class="perf-metric-score">{{ m2.get('score_pct', 81) }}%</span>
+            </div>
+            <h3 class="perf-metric-title">{{ m2.get('title', 'Early Risk Detection') }}</h3>
+            <div class="perf-bar-track">
+              <div class="perf-bar-fill perf-bar-fill--blue" style="width: {{ m2.get('score_pct', 81) }}%;"></div>
+            </div>
+            <p class="perf-metric-summary"><strong>{{ m2.get('summary', '') }}</strong></p>
+            <p class="perf-metric-desc">{{ m2.get('description', '') }}</p>
+          </div>
+
+          <!-- 3. Precautionary Balance (Precision) -->
+          {% set m3 = perf.get('precautionary_balance', {}) %}
+          <div class="perf-metric-card">
+            <div class="perf-metric-top">
+              <span class="perf-metric-badge perf-metric-badge--amber">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                {{ m3.get('badge', 'Safety First') }}
+              </span>
+              <span class="perf-metric-score">{{ m3.get('score_pct', 65) }}%</span>
+            </div>
+            <h3 class="perf-metric-title">{{ m3.get('title', 'Targeted Precision') }}</h3>
+            <div class="perf-bar-track">
+              <div class="perf-bar-fill perf-bar-fill--amber" style="width: {{ m3.get('score_pct', 65) }}%;"></div>
+            </div>
+            <p class="perf-metric-summary"><strong>{{ m3.get('summary', '') }}</strong></p>
+            <p class="perf-metric-desc">{{ m3.get('description', '') }}</p>
+          </div>
+
+        </div><!-- /perf-grid -->
+
+        <!-- Model & Dataset Provenance Box -->
+        {% set ds = perf.get('dataset_info', {}) %}
+        <div class="perf-info-box">
+          <div class="perf-info-header">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
+            <span>Validated Dataset &amp; Model Provenance</span>
+          </div>
+          <div class="perf-info-tags">
+            <span class="perf-tag">Model: <strong>{{ ds.get('model_type', 'SVM (RBF Kernel)') }}</strong></span>
+            <span class="perf-tag">Sample Size: <strong>{{ ds.get('sample_size', '253,680 records') }}</strong></span>
+            <span class="perf-tag">Source: <strong>{{ ds.get('source', 'CDC BRFSS Dataset') }}</strong></span>
+          </div>
+          <p class="perf-info-desc">{{ ds.get('validation_note', '') }}</p>
+        </div>
+
+        <!-- Reliability Disclaimer -->
+        <div class="perf-disclaimer" role="note">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
+          </svg>
+          <span>
+            These validation statistics reflect population-level machine learning benchmarks.
+            They do <strong>not</strong> replace clinical blood tests (such as HbA1c or fasting glucose).
+          </span>
+        </div>
+
+      </div><!-- /perf-content -->
+    </div><!-- /perf-card -->
+  </div>
+</section>
+
+
 <!-- ── CTA Banner ──────────────────────────────────────────────────────── -->
 <section class="section" aria-label="Call to action">
   <div class="container">

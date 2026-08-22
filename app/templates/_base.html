@@ -35,6 +35,7 @@
         <a href="{{ url_for('main.index') }}" class="navbar__link">Home</a>
         <a href="{{ url_for('main.index') }}#how-it-works" class="navbar__link">How it works</a>
         <a href="{{ url_for('main.index') }}#features" class="navbar__link">Features</a>
+        <a href="{{ url_for('main.index') }}#reliability" class="navbar__link">Model Reliability</a>
         <a href="{{ url_for('main.screening') }}" class="navbar__cta" id="nav-cta-btn">
           Start Screening
         </a>
@@ -53,11 +54,70 @@
       <p class="footer__copy">&copy; 2025 GlucoScreen. For informational purposes only.</p>
       <nav class="footer__links" aria-label="Footer navigation">
         <a href="{{ url_for('main.index') }}#how-it-works">How it works</a>
+        <a href="{{ url_for('main.index') }}#reliability">Model Reliability</a>
         <a href="{{ url_for('main.screening') }}">Free Screening</a>
       </nav>
+
     </div>
   </footer>
 
+  <!-- ── Floating RAG Chatbot Widget ──────────────────────────────────── -->
+  <div class="chat-widget-wrapper" id="chat-widget">
+    <!-- Floating Circular Robot Avatar Trigger Button -->
+    <button type="button" class="chat-trigger" id="chat-trigger" aria-label="Open AI Medical Chatbot">
+      <img src="{{ url_for('static', filename='images/bot-avatar.png') }}" alt="Dr. GlucoBot AI" class="chat-trigger__avatar" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\' fill=\'%230d9488\'><circle cx=\'50\' cy=\'50\' r=\'45\' fill=\'%23ccfbf1\'/><rect x=\'30\' y=\'30\' width=\'40\' height=\'30\' rx=\'8\' fill=\'%230f766e\'/><circle cx=\'40\' cy=\'45\' r=\'5\' fill=\'%232dd4bf\'/><circle cx=\'60\' cy=\'45\' r=\'5\' fill=\'%232dd4bf\'/><path d=\'M35 70 Q50 85 65 70\' stroke=\'%230f766e\' stroke-width=\'4\' fill=\'none\'/></svg>';">
+      <span class="chat-trigger__online-badge" title="Online"></span>
+    </button>
+
+    <!-- Floating Chat Modal Drawer -->
+    <div class="chat-container" id="chat-container">
+      <!-- Header -->
+      <div class="chat-header">
+        <div class="chat-header__info">
+          <img src="{{ url_for('static', filename='images/bot-avatar.png') }}" alt="Dr. GlucoBot" class="chat-header__avatar" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\' fill=\'%230d9488\'><circle cx=\'50\' cy=\'50\' r=\'45\' fill=\'%23ccfbf1\'/><rect x=\'30\' y=\'30\' width=\'40\' height=\'30\' rx=\'8\' fill=\'%230f766e\'/><circle cx=\'40\' cy=\'45\' r=\'5\' fill=\'%232dd4bf\'/><circle cx=\'60\' cy=\'45\' r=\'5\' fill=\'%232dd4bf\'/></svg>';">
+          <div>
+            <div class="chat-header__title">Dr. GlucoBot AI</div>
+            <div class="chat-header__subtitle">
+              <span class="chat-header__status-dot"></span>
+              Online • Clinical RAG Assistant
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-header__actions">
+          <button type="button" class="chat-header__btn" id="chat-reset-btn" title="Reset Chat">↺</button>
+          <button type="button" class="chat-header__btn" id="chat-close-btn" title="Close Chat">✕</button>
+        </div>
+      </div>
+
+      <!-- Messages Feed -->
+      <div class="chat-messages" id="chat-messages">
+        <div class="chat-msg chat-msg--bot">
+          <div class="chat-msg__bubble">
+            Hello! 👋 I am <strong>Dr. GlucoBot</strong>, your AI Medical Assistant.<br><br>
+            Ask me anything about <strong>diabetes risk factors</strong>, <strong>symptoms</strong>, <strong>diet & exercise recommendations</strong>, or how our <strong>GlucoScreen AI model</strong> works.
+          </div>
+        </div>
+      </div>
+
+      <!-- Suggested Question Chips -->
+      <div class="chat-suggestions" id="chat-suggestions"></div>
+
+      <!-- Input Bar -->
+      <form class="chat-input-bar" id="chat-form">
+        <input type="text" id="chat-input" class="chat-input-bar__field" placeholder="Ask about diabetes, diet, risk factors..." autocomplete="off" required>
+        <button type="submit" class="chat-input-bar__send" aria-label="Send message">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
   {% block extra_scripts %}{% endblock %}
 </body>
 </html>
+

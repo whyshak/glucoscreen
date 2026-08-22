@@ -1,0 +1,117 @@
+# GLUCOSCREEN & DIABETES CLINICAL KNOWLEDGE BASE
+
+## SECTION 1: OVERVIEW OF DIABETES MELLITUS & PREDIABETES
+Diabetes mellitus is a chronic metabolic disease characterized by elevated levels of blood glucose (hyperglycemia). Over time, unmanaged diabetes leads to serious damage to the heart, blood vessels, eyes, kidneys, and nerves.
+
+### Types of Diabetes
+- Prediabetes: A critical condition where blood sugar levels are higher than normal but not yet high enough to be diagnosed as Type 2 diabetes. People with prediabetes have a significantly increased risk of developing Type 2 diabetes, heart disease, and stroke.
+- Type 2 Diabetes: The most common form (accounting for ~90-95% of cases). The body becomes resistant to insulin or doesn't produce enough insulin. It develops primarily in adults but is increasingly diagnosed in younger populations due to lifestyle factors.
+- Type 1 Diabetes: An autoimmune condition where the pancreas produces little or no insulin. Requires lifelong insulin therapy.
+- Gestational Diabetes: High blood sugar diagnosed during pregnancy, increasing future risk of Type 2 diabetes for both mother and child.
+
+## SECTION 2: KEY CLINICAL RISK FACTORS (CDC BRFSS INDICATORS)
+GlucoScreen evaluates 15 key evidence-based risk factors derived from the CDC Behavioral Risk Factor Surveillance System (BRFSS):
+
+1. High Blood Pressure (HighBP):
+   - Definition: Systolic BP >= 130 mmHg or Diastolic BP >= 80 mmHg, or currently taking antihypertensive medication.
+   - Impact: Hypertension doubles the risk of cardiovascular complications in individuals with diabetes and damages kidney microvasculature.
+
+2. High Cholesterol (HighChol):
+   - Definition: Total cholesterol >= 200 mg/dL or LDL >= 100 mg/dL.
+   - Impact: Promotes arterial plaque formation (atherosclerosis), sharply raising stroke and heart attack risk.
+
+3. Body Mass Index (BMI):
+   - Categories: Underweight (< 18.5), Normal (18.5 - 24.9), Overweight (25 - 29.9), Obese (>= 30).
+   - Impact: Excess visceral fat, particularly around the abdomen, releases inflammatory cytokines that cause insulin resistance. BMI >= 30 is one of the strongest individual risk drivers.
+
+4. Smoking Status (Smoker):
+   - Definition: Having smoked at least 100 cigarettes in lifetime.
+   - Impact: Nicotine impairs insulin sensitivity and accelerates vascular damage.
+
+5. History of Stroke & Heart Disease:
+   - Impact: Indicates underlying cardiovascular disease, which shares major metabolic pathways with Type 2 diabetes.
+
+6. Physical Inactivity (PhysActivity):
+   - Definition: No leisure-time physical activity or exercise during the past 30 days.
+   - Impact: Muscle contraction increases GLUT4 translocation, allowing glucose intake independent of insulin. Inactivity leads to reduced glucose clearance.
+
+7. Fruit and Vegetable Consumption:
+   - Impact: Diets low in fiber, vitamins, and antioxidants exacerbate systemic inflammation and glucose spikes.
+
+8. Heavy Alcohol Consumption:
+   - Definition: > 14 drinks/week for men, > 7 drinks/week for women.
+   - Impact: Impairs liver gluconeogenesis, worsens pancreatic beta-cell function, and adds excess calories.
+
+9. General Health Perception (GenHlth):
+   - Rating from 1 (Excellent) to 5 (Poor). Subjective overall health strongly correlates with metabolic stress and undiagnosed chronic illness.
+
+10. Physical & Mental Health (PhysHlth / MentHlth):
+    - Number of days per month physical or mental health was not good. Chronic stress elevates cortisol and epinephrine, causing hyperglycemia.
+
+11. Physical Mobility (DiffWalk):
+    - Difficulty walking or climbing stairs indicates physical limitation, sarcopenia, or advanced metabolic complications.
+
+12. Age & Demographics:
+    - Age Groups: Risk increases progressively with age, particularly after 45 years due to accumulated metabolic decay and loss of muscle mass.
+
+## SECTION 3: DIAGNOSTIC CRITERIA & BLOOD SUGAR THRESHOLDS
+Standard clinical diagnostic criteria established by the American Diabetes Association (ADA):
+
+- Fasting Plasma Glucose (FPG):
+  - Normal: < 100 mg/dL (5.6 mmol/L)
+  - Prediabetes: 100 to 125 mg/dL (5.6 to 6.9 mmol/L)
+  - Diabetes: >= 126 mg/dL (7.0 mmol/L)
+
+- Hemoglobin A1C (HbA1c - 3-Month Average Glucose):
+  - Normal: < 5.7%
+  - Prediabetes: 5.7% to 6.4%
+  - Diabetes: >= 6.5%
+
+- Oral Glucose Tolerance Test (OGTT - 2-hour post 75g glucose):
+  - Normal: < 140 mg/dL
+  - Prediabetes: 140 to 199 mg/dL
+  - Diabetes: >= 200 mg/dL
+
+## SECTION 4: DIETARY & LIFESTYLE INTERVENTIONS FOR RISK REDUCTION
+Lifestyle modification is the primary defense against diabetes onset. Clinical trials (like the Diabetes Prevention Program) show that intensive lifestyle intervention reduces diabetes risk by 58%.
+
+### Dietary Recommendations
+- High-Fiber Carbohydrates: Non-starchy vegetables (spinach, broccoli, kale), legumes (lentils, chickpeas), whole grains (oats, quinoa, brown rice). Fiber slows glucose absorption.
+- Glycemic Index (GI): Prefer low-GI foods (< 55) over high-GI refined grains, white bread, and sugary snacks.
+- Sugar-Sweetened Beverages: Eliminate soda, sweetened teas, and fruit juices. Swap with water, unsweetened herbal tea, or sparkling water.
+- Healthy Fats: Focus on monounsaturated and polyunsaturated fats (olive oil, avocados, nuts, chia seeds, wild salmon). Limit saturated fats and avoid trans fats.
+
+### Exercise Protocol
+- Aerobic Exercise: At least 150 minutes of moderate-intensity activity per week (e.g., brisk walking, cycling, swimming, dancing) spread across at least 3-5 days.
+- Resistance Training: 2-3 sessions per week targeting major muscle groups. Muscle tissue acts as the primary reservoir for glucose clearance.
+- Post-Meal Walk: A 10-15 minute walk following meals significantly flattens postprandial glucose spikes.
+
+### Weight Loss & Sleep
+- Weight Target: Losing 5% to 7% of total body weight reduces diabetes risk by over 50% for overweight individuals.
+- Sleep Hygiene: Aim for 7-9 hours of restful sleep per night. Sleep deprivation increases ghrelin (hunger hormone) and impairs glucose metabolism.
+
+## SECTION 5: HOW THE GLUCOSCREEN ML MODEL WORKS
+GlucoScreen utilizes an advanced Machine Learning pipeline to calculate your diabetes risk profile:
+
+- Model Architecture: Support Vector Machine (SVM) with Radial Basis Function (RBF) Kernel, optimized using Hyperparameter Tuning (C parameter, Gamma).
+- Calibration & Preprocessing: Input variables are normalized using StandardScaler derived from training data distributions.
+- Explainable AI (SHAP): Uses SHAP (SHapley Additive exPlanations) values to calculate exact contribution metrics for each of your personal health inputs.
+- Performance Metrics: Trained on CDC BRFSS dataset (~250,000 participant records), achieving high ROC-AUC and high sensitivity (minimizing false negatives so high-risk cases are not missed).
+
+### Understanding Your Screening Results
+- Low Risk (< 25% Probability): Continue maintaining healthy lifestyle habits, annual checkups, and balanced nutrition.
+- Moderate Risk (25% - 50% Probability): Lifestyle modification recommended. Focus on increasing weekly physical activity, improving dietary fiber, and scheduling a routine blood test (HbA1c / Fasting Glucose) with your doctor.
+- High Risk (> 50% Probability): Medical consultation strongly advised. We recommend scheduling an appointment with your primary care physician for diagnostic blood testing and personalized medical evaluation.
+
+## SECTION 6: FREQUENTLY ASKED QUESTIONS (FAQS)
+Q: Is GlucoScreen a diagnostic tool?
+A: No. GlucoScreen is a prescreening risk assessment tool designed for educational and awareness purposes. Only a licensed healthcare professional using laboratory blood tests can diagnose diabetes.
+
+Q: What should I do if my GlucoScreen risk score is High?
+A: Do not panic. A high score means your health profile shares characteristics common in individuals with diabetes or prediabetes. Take your GlucoScreen result summary to your primary care doctor and request an A1C or fasting blood sugar test.
+
+Q: Can prediabetes be reversed?
+A: Yes! Prediabetes is completely reversible through weight loss, dietary changes, and regular physical activity before permanent beta-cell damage occurs.
+
+Q: Are there early symptoms of diabetes to watch out for?
+A: Common early signs include frequent urination (polyuria), excessive thirst (polydipsia), unexplained weight loss, constant fatigue, blurry vision, slow-healing cuts or sores, and tingling/numbness in hands or feet.

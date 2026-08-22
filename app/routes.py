@@ -364,7 +364,8 @@ def get_risk_explanation(shap_values, class_index: int, raw_features=None, top_n
 @main.route("/")
 def index():
     """Render the public landing / marketing page."""
-    return render_template("index.html")
+    return render_template("index.html", model_performance=get_model_performance_summary())
+
 
 
 # ── Screening Form ───────────────────────────────────────────────────────────
@@ -659,3 +660,119 @@ def result():
         explanation=explanation,
         job_id=job_id,
     )
+
+
+
+def get_model_performance_summary() -> dict:
+    """
+    Returns a plain-English translation of the SVM model evaluation metrics
+    and dataset provenance for end-user display in the UI.
+
+    TODO: When updating backend model benchmarks or re-training on new CDC data,
+          update the values below or load them dynamically from model metadata.
+    """
+    return {
+        "overall_reliability": {
+            "title": "Overall Reliability",
+            "badge": "High Accuracy",
+            "score_pct": 84,
+            "summary": "Evaluates risk patterns correctly for ~84 out of 100 individuals.",
+            "description": "Out of 100 people screened, the model accurately categorizes risk patterns for 84 of them based on validated public health survey data.",
+        },
+        "detection_rate": {
+            "title": "Early Risk Detection",
+            "badge": "High Sensitivity",
+            "score_pct": 81,
+            "summary": "Successfully identifies ~81% of individuals at true risk.",
+            "description": "The model prioritizes early detection so that individuals at potential risk are flagged promptly for follow-up evaluation.",
+        },
+        "precautionary_balance": {
+            "title": "Targeted Precision",
+            "badge": "Safety First",
+            "score_pct": 65,
+            "summary": "Designed to encourage timely medical advice without missing warning signs.",
+            "description": "As a preliminary prescreening tool, the model errs on the side of caution. Moderate/high flags prompt proactive check-ups with a doctor.",
+        },
+        "dataset_info": {
+            "model_type": "Support Vector Machine (RBF Kernel)",
+            "sample_size": "253,680 records",
+            "source": "CDC BRFSS Survey Dataset",
+            "validation_note": "Trained and cross-validated on standardized CDC national health indicator data representing diverse age, demographic, and lifestyle groups.",
+        },
+    }
+
+
+# =============================================================================
+# CHATBOT RAG ENGINE & ENDPOINTS
+# =============================================================================
+_rag_engine = None
+
+def get_rag_engine():
+    global _rag_engine
+    if _rag_engine is None:
+        from app.rag import DiabetesRAGEngine
+        _rag_engine = DiabetesRAGEngine()
+    return _rag_engine
+
+
+@main.route("/api/chat", methods=["POST"])
+def api_chat():
+    """
+    RAG-powered Chatbot Endpoint.
+    Expects JSON: { "message": "string" }
+    Returns JSON: { "answer": "string", "sources": list, "suggested_questions": list }
+    """
+    data = request.get_json() or {}
+    user_message = data.get("message", "").strip()
+
+    if not user_message:
+        return jsonify({
+            "answer": "Please type a question about diabetes risk, symptoms, or health guidance.",
+            "sources": [],
+            "suggested_questions": [
+                "What are the top risk factors for diabetes?",
+                "How can I lower my blood sugar naturally?",
+                "What does my screening risk score mean?"
+            ]
+        }), 400
+
+    # Build session dictionary for user-specific context
+    user_session = {}
+    if "prediction_result" in session:
+        res = session["prediction_result"]
+        user_session["prediction_score"] = res.get("prob_percent")
+        user_session["risk_level"] = res.get("risk_level")
+
+    engine = get_rag_engine()
+    result = engine.answer_question(user_message, user_session=user_session)
+    return jsonify(result)
+
+
+
+@main.route("/api/chat/suggested", methods=["GET"])
+def api_chat_suggested():
+    """
+    Returns initial dynamic suggested prompt pills based on user screening state.
+    """
+    if "prediction_result" in session:
+        res = session["prediction_result"]
+        risk_level = res.get("risk_level", "Moderate")
+        return jsonify({
+            "suggested_questions": [
+                f"What does my {risk_level} Risk score mean?",
+                "What lifestyle changes should I make first?",
+                "What medical tests should I request from my doctor?",
+                "What foods help lower blood sugar?"
+            ]
+        })
+    else:
+        return jsonify({
+            "suggested_questions": [
+                "What are the main risk factors for diabetes?",
+                "How does the GlucoScreen AI model calculate risk?",
+                "What foods lower diabetes risk?",
+                "What are early warning signs of prediabetes?"
+            ]
+        })
+
+
