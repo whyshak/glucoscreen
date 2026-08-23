@@ -1,21 +1,21 @@
 """
-tests/test_chat.py — Test suite for Dia Chatbot and /api/chat endpoint.
+tests/test_chat.py — Test suite for Dia Live RAG Chatbot and /api/chat endpoint.
 """
 
 import unittest
 from app import create_app
-from app.chatbot_service import (
-    FALLBACK_INTENT,
-    INTENTS,
+from app.rag_service import (
+    DEFAULT_SUGGESTIONS,
     QUICK_PROMPTS,
+    SYSTEM_PROMPT,
     WELCOME_MESSAGE,
-    generate_mock_chat_response,
-    score_intent,
+    RAGChatbot,
+    rag_bot,
 )
 
 
-class TestDiaChatbot(unittest.TestCase):
-    """Unit and integration tests for the Dia chatbot UI & API."""
+class TestDiaLiveRAGChatbot(unittest.TestCase):
+    """Unit and integration tests for the live RAG chatbot backend and /api/chat route."""
 
     def setUp(self):
         self.app = create_app()
@@ -56,68 +56,52 @@ class TestDiaChatbot(unittest.TestCase):
         data = response.get_json()
         self.assertIn("under 1,000 characters", data["error"])
 
-    def test_api_chat_valid_greeting_inquiry(self):
-        """POST /api/chat with 'hello' returns greeting and suggestion chips."""
-        response = self.client.post("/api/chat", json={"message": "Hello there"})
-        self.assertEqual(response.status_code, 200)
-        data = response.get_json()
-        self.assertIn("text", data)
-        self.assertIn("suggestions", data)
-        self.assertIn("Dia", data["text"])
-        self.assertFalse(data["rag_ready"])
-        self.assertIsInstance(data["suggestions"], list)
-        self.assertGreater(len(data["suggestions"]), 0)
-
-    def test_api_chat_symptoms_inquiry(self):
-        """POST /api/chat with symptoms question returns medical guidance."""
+    def test_api_chat_live_rag_inquiry_symptoms(self):
+        """POST /api/chat with symptoms query retrieves context and returns answer."""
         response = self.client.post(
             "/api/chat",
             json={"message": "What are the common symptoms of diabetes?"}
         )
         self.assertEqual(response.status_code, 200)
         data = response.get_json()
-        self.assertIn("Common symptoms of diabetes", data["text"])
-        self.assertIn("thirst", data["text"].lower())
-        self.assertFalse(data["rag_ready"])
+        self.assertIn("text", data)
+        self.assertIn("suggestions", data)
+        self.assertIn("sources", data)
+        self.assertTrue(data.get("rag_ready", False))
+        self.assertIsInstance(data["suggestions"], list)
+        self.assertGreater(len(data["suggestions"]), 0)
 
-    def test_api_chat_diet_inquiry(self):
-        """POST /api/chat with diet question returns diabetes plate recommendations."""
+    def test_api_chat_live_rag_inquiry_diet(self):
+        """POST /api/chat with diet query returns dietary guidance and suggestions."""
         response = self.client.post(
             "/api/chat",
-            json={"message": "What food should I eat for a healthy diet?"}
+            json={"message": "What should I eat for breakfast with diabetes?"}
         )
         self.assertEqual(response.status_code, 200)
         data = response.get_json()
-        self.assertIn("diabetes-friendly plate", data["text"].lower())
+        self.assertIn("text", data)
+        self.assertTrue(len(data["text"]) > 0)
+        self.assertTrue(data.get("rag_ready", False))
 
-    def test_api_chat_fallback_on_unrecognized_query(self):
-        """POST /api/chat with unrecognized query returns friendly educational fallback."""
-        response = self.client.post(
-            "/api/chat",
-            json={"message": "xyz987quantumphysicsfluctuations"}
-        )
-        self.assertEqual(response.status_code, 200)
-        data = response.get_json()
-        self.assertIn("I'm not quite sure I caught that", data["text"])
-        self.assertGreaterEqual(len(data["suggestions"]), 1)
+    def test_rag_chatbot_direct_retrieval(self):
+        """Test RAGChatbot retrieval directly."""
+        bot = RAGChatbot()
+        bot.initialize()
+        self.assertIsNotNone(bot._retriever)
 
-    def test_score_intent_direct_unit(self):
-        """Verify intent scoring logic and fallback."""
-        # Exact match
-        matched_diet = score_intent("Tell me about healthy diet and meals")
-        self.assertEqual(matched_diet["id"], "diet")
+        # Retrieve documents
+        docs = bot._retriever.invoke("blood sugar levels")
+        self.assertGreater(len(docs), 0)
+        self.assertTrue(any("blood" in d.page_content.lower() or "glucose" in d.page_content.lower() or "diabetes" in d.page_content.lower() for d in docs))
 
-        # Exercise
-        matched_ex = score_intent("How much workout and exercise should I do?")
-        self.assertEqual(matched_ex["id"], "exercise")
-
-        # Hypoglycemia
-        matched_hypo = score_intent("What do I do for low blood sugar or hypoglycemia?")
-        self.assertEqual(matched_hypo["id"], "hypoglycemia")
-
-        # Unknown
-        matched_fb = score_intent("abcdef 123456")
-        self.assertEqual(matched_fb["id"], "fallback")
+    def test_rag_chatbot_ask_returns_structured_dict(self):
+        """Test RAGChatbot ask method output format."""
+        result = rag_bot.ask("What is prediabetes?")
+        self.assertIn("text", result)
+        self.assertIn("suggestions", result)
+        self.assertIn("sources", result)
+        self.assertTrue(result["rag_ready"])
+        self.assertIsInstance(result["suggestions"], list)
 
 
 if __name__ == "__main__":
