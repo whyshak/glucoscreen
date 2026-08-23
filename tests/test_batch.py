@@ -232,5 +232,24 @@ class BatchPredictionTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
 
 
+    def test_navbar_grouped_dropdown(self):
+        """Test navbar contains grouped Start Screening dropdown with single and batch options."""
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"screeningDropdown", response.data)
+        self.assertIn(b"Single Screening", response.data)
+        self.assertIn(b"Batch Screening", response.data)
+
+    def test_batch_guide_breakdowns_present(self):
+        """Test that Age, GenHlth, Education, and Income value breakdowns are present in batch page."""
+        response = self.client.get("/batch")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"18\xe2\x80\x9324 yrs", response.data)  # Age group 1: 18–24 yrs
+        self.assertIn(b"80+ yrs", response.data)        # Age group 13: 80+ yrs
+        self.assertIn(b"Excellent", response.data)      # GenHlth 1
+        self.assertIn(b"College graduate", response.data) # Education 6
+        self.assertIn(b"Less than $10,000", response.data) # Income 1
+
+
 if __name__ == "__main__":
     unittest.main()

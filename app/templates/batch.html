@@ -116,33 +116,85 @@
                 <table class="guide-table">
                   <thead>
                     <tr>
-                      <th>Column Header</th>
-                      <th>Feature Name</th>
-                      <th>Accepted Values</th>
+                      <th style="width: 140px;">Column Header</th>
+                      <th style="width: 175px;">Feature Name</th>
+                      <th>Accepted Values &amp; Detailed Specification</th>
                     </tr>
                   </thead>
                   <tbody>
                     {% for col in columns %}
                     <tr>
                       <td><code>{{ col }}</code></td>
-                      <td>{{ feature_labels.get(col, col) }}</td>
+                      <td><strong>{{ feature_labels.get(col, col) }}</strong></td>
                       <td>
                         {% if col in ['HighBP', 'HighChol', 'CholCheck', 'Smoker', 'Stroke', 'HeartDiseaseorAttack', 'PhysActivity', 'Fruits', 'Veggies', 'HvyAlcoholConsump', 'AnyHealthcare', 'NoDocbcCost', 'DiffWalk'] %}
-                          <code>0</code> (No) / <code>1</code> (Yes)
+                          <div class="guide-val-flex">
+                            <span class="guide-item-pill"><strong class="guide-badge">0</strong> No</span>
+                            <span class="guide-item-pill"><strong class="guide-badge">1</strong> Yes</span>
+                            <span class="guide-hint"><em>(also accepts False/True, N/Y)</em></span>
+                          </div>
                         {% elif col == 'Sex' %}
-                          <code>0</code> (Female) / <code>1</code> (Male)
+                          <div class="guide-val-flex">
+                            <span class="guide-item-pill"><strong class="guide-badge">0</strong> Female</span>
+                            <span class="guide-item-pill"><strong class="guide-badge">1</strong> Male</span>
+                            <span class="guide-hint"><em>(also accepts F/M)</em></span>
+                          </div>
                         {% elif col == 'BMI' %}
-                          Continuous numeric (<code>10.0 – 100.0</code>)
+                          <div class="guide-val-text">
+                            Continuous Body Mass Index in kg/m&sup2; (e.g. <code>24.5</code>, valid range: <code>10.0 – 100.0</code>)
+                          </div>
                         {% elif col == 'GenHlth' %}
-                          <code>1</code> (Excellent) to <code>5</code> (Poor)
+                          <div class="guide-val-header">General Health self-rating <code>1</code> to <code>5</code>:</div>
+                          <div class="guide-grid guide-grid--5col">
+                            <div class="guide-item-row"><span class="guide-badge">1</span><span class="guide-desc">Excellent</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">2</span><span class="guide-desc">Very Good</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">3</span><span class="guide-desc">Good</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">4</span><span class="guide-desc">Fair</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">5</span><span class="guide-desc">Poor</span></div>
+                          </div>
                         {% elif col in ['MentHlth', 'PhysHlth'] %}
-                          Days in last month (<code>0 – 30</code>)
+                          <div class="guide-val-text">
+                            Number of poor health days in past 30 days (numeric <code>0 – 30</code>)
+                          </div>
                         {% elif col == 'Age' %}
-                          Age Group <code>1–13</code> or Age in Years <code>18–120</code>
+                          <div class="guide-val-header">CDC 5-Year Age Groups <code>1</code>–<code>13</code> <em>(or raw age in years <code>18</code>–<code>120</code>)</em>:</div>
+                          <div class="guide-grid guide-grid--age">
+                            <div class="guide-item-row"><span class="guide-badge">1</span><span class="guide-desc">18–24 yrs</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">2</span><span class="guide-desc">25–29 yrs</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">3</span><span class="guide-desc">30–34 yrs</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">4</span><span class="guide-desc">35–39 yrs</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">5</span><span class="guide-desc">40–44 yrs</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">6</span><span class="guide-desc">45–49 yrs</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">7</span><span class="guide-desc">50–54 yrs</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">8</span><span class="guide-desc">55–59 yrs</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">9</span><span class="guide-desc">60–64 yrs</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">10</span><span class="guide-desc">65–69 yrs</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">11</span><span class="guide-desc">70–74 yrs</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">12</span><span class="guide-desc">75–79 yrs</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">13</span><span class="guide-desc">80+ yrs</span></div>
+                          </div>
                         {% elif col == 'Education' %}
-                          Level <code>1–6</code>
+                          <div class="guide-val-header">Education Level Categories <code>1</code> to <code>6</code>:</div>
+                          <div class="guide-grid guide-grid--education">
+                            <div class="guide-item-row"><span class="guide-badge">1</span><span class="guide-desc">Never attended school / Kindergarten only</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">2</span><span class="guide-desc">Elementary (Grades 1–8)</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">3</span><span class="guide-desc">Some high school (Grades 9–11)</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">4</span><span class="guide-desc">High school graduate / GED</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">5</span><span class="guide-desc">Some college or technical school</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">6</span><span class="guide-desc">College graduate (4+ years degree)</span></div>
+                          </div>
                         {% elif col == 'Income' %}
-                          Category <code>1–8</code>
+                          <div class="guide-val-header">Household Annual Income Tiers <code>1</code> to <code>8</code>:</div>
+                          <div class="guide-grid guide-grid--income">
+                            <div class="guide-item-row"><span class="guide-badge">1</span><span class="guide-desc">Less than $10,000</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">2</span><span class="guide-desc">$10,000 to &lt;$15,000</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">3</span><span class="guide-desc">$15,000 to &lt;$20,000</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">4</span><span class="guide-desc">$20,000 to &lt;$25,000</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">5</span><span class="guide-desc">$25,000 to &lt;$35,000</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">6</span><span class="guide-desc">$35,000 to &lt;$50,000</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">7</span><span class="guide-desc">$50,000 to &lt;$75,000</span></div>
+                            <div class="guide-item-row"><span class="guide-badge">8</span><span class="guide-desc">$75,000 or more</span></div>
+                          </div>
                         {% endif %}
                       </td>
                     </tr>
@@ -378,7 +430,25 @@
             <thead>
               <tr>
                 <th style="width:70px;"># ID</th>
-                <th style="width:140px;">Risk Score</th>
+                <th style="width:160px;" class="th-sortable" id="sortRiskScoreTh" role="columnheader" aria-sort="none" tabindex="0" title="Click to sort by Risk Score">
+                  <div class="th-sortable-inner">
+                    <span>Risk Score</span>
+                    <span class="sort-indicator" id="sortRiskScoreIndicator" aria-hidden="true">
+                      <svg class="sort-icon sort-icon--neutral" id="sortIconNeutral" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m7 15 5 5 5-5"/>
+                        <path d="m7 9 5-5 5 5"/>
+                      </svg>
+                      <svg class="sort-icon sort-icon--desc" id="sortIconDesc" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                        <path d="M12 5v14"/>
+                        <path d="m19 12-7 7-7-7"/>
+                      </svg>
+                      <svg class="sort-icon sort-icon--asc" id="sortIconAsc" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                        <path d="M12 19V5"/>
+                        <path d="m5 12 7-7 7 7"/>
+                      </svg>
+                    </span>
+                  </div>
+                </th>
                 <th style="width:150px;">Risk Category</th>
                 <th>Age Group</th>
                 <th>BMI</th>
@@ -456,6 +526,7 @@
   let filteredData = [];
   let activeTierFilter = 'all';
   let searchQuery = '';
+  let sortDirection = 'none'; // 'none', 'desc', 'asc'
   let currentPage = 1;
   const pageSize = 15;
 
@@ -508,6 +579,12 @@
   const pageIndicator = document.getElementById('pageIndicator');
   const tablePaginationInfo = document.getElementById('tablePaginationInfo');
 
+  // Sorting Elements
+  const sortRiskScoreTh = document.getElementById('sortRiskScoreTh');
+  const sortIconNeutral = document.getElementById('sortIconNeutral');
+  const sortIconDesc = document.getElementById('sortIconDesc');
+  const sortIconAsc = document.getElementById('sortIconAsc');
+
   // Actions
   const exportCsvBtn = document.getElementById('exportCsvBtn');
   const exportXlsxBtn = document.getElementById('exportXlsxBtn');
@@ -542,6 +619,32 @@
       11: '70–74', 12: '75–79', 13: '80+'
     };
     return map[val] || `Group ${val}`;
+  }
+
+  function getEducationText(val) {
+    const map = {
+      1: 'Never attended / Kindergarten',
+      2: 'Elementary (Grades 1–8)',
+      3: 'Some high school (Grades 9–11)',
+      4: 'High school graduate / GED',
+      5: 'Some college / Technical school',
+      6: 'College graduate (4+ years)',
+    };
+    return map[val] || `Level ${val}`;
+  }
+
+  function getIncomeText(val) {
+    const map = {
+      1: '< $10,000',
+      2: '$10,000–$14,999',
+      3: '$15,000–$19,999',
+      4: '$20,000–$24,999',
+      5: '$25,000–$34,999',
+      6: '$35,000–$49,999',
+      7: '$50,000–$74,999',
+      8: '$75,000+',
+    };
+    return map[val] || `Tier ${val}`;
   }
 
   // ── File Selection & Drag-and-Drop ───────────────────────────────────────
@@ -706,9 +809,46 @@
     activeTierFilter = 'all';
     searchQuery = '';
     tableSearchInput.value = '';
+    sortDirection = 'none';
+    updateSortUI();
     currentPage = 1;
     updateFilterPillUI();
     applyFilterAndRender();
+  }
+
+  // ── Sorting Logic ────────────────────────────────────────────────────────
+  function updateSortUI() {
+    if (!sortRiskScoreTh) return;
+    sortRiskScoreTh.setAttribute('aria-sort', sortDirection === 'desc' ? 'descending' : (sortDirection === 'asc' ? 'ascending' : 'none'));
+    if (sortIconNeutral) sortIconNeutral.style.display = sortDirection === 'none' ? 'inline-block' : 'none';
+    if (sortIconDesc) sortIconDesc.style.display = sortDirection === 'desc' ? 'inline-block' : 'none';
+    if (sortIconAsc) sortIconAsc.style.display = sortDirection === 'asc' ? 'inline-block' : 'none';
+    if (sortDirection !== 'none') {
+      sortRiskScoreTh.classList.add('th-sortable--active');
+    } else {
+      sortRiskScoreTh.classList.remove('th-sortable--active');
+    }
+  }
+
+  if (sortRiskScoreTh) {
+    sortRiskScoreTh.addEventListener('click', function () {
+      if (sortDirection === 'none') {
+        sortDirection = 'desc';
+      } else if (sortDirection === 'desc') {
+        sortDirection = 'asc';
+      } else {
+        sortDirection = 'none';
+      }
+      updateSortUI();
+      applyFilterAndRender();
+    });
+
+    sortRiskScoreTh.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        sortRiskScoreTh.click();
+      }
+    });
   }
 
   // ── Filter & Search Logic ────────────────────────────────────────────────
@@ -736,6 +876,15 @@
       }
       return true;
     });
+
+    // Apply Risk Score sorting
+    if (sortDirection === 'desc') {
+      filteredData.sort((a, b) => (b.risk_score || 0) - (a.risk_score || 0));
+    } else if (sortDirection === 'asc') {
+      filteredData.sort((a, b) => (a.risk_score || 0) - (b.risk_score || 0));
+    } else {
+      filteredData.sort((a, b) => a.row_id - b.row_id);
+    }
 
     currentPage = 1;
     renderTablePage();
@@ -875,6 +1024,10 @@
         displayVal = `${getAgeGroupText(val)} (Group ${val})`;
       } else if (key === 'GenHlth') {
         displayVal = `${getGenHlthText(val)} (Scale ${val})`;
+      } else if (key === 'Education') {
+        displayVal = `${getEducationText(val)} (Level ${val})`;
+      } else if (key === 'Income') {
+        displayVal = `${getIncomeText(val)} (Tier ${val})`;
       } else if (['MentHlth', 'PhysHlth'].includes(key)) {
         displayVal = `${val} days`;
       }
