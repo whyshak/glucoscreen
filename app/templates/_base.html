@@ -36,9 +36,47 @@
         <a href="{{ url_for('main.index') }}#how-it-works" class="navbar__link">How it works</a>
         <a href="{{ url_for('main.index') }}#features" class="navbar__link">Features</a>
         <a href="{{ url_for('main.index') }}#model-reliability" class="navbar__link">Accuracy &amp; Reliability</a>
-        <a href="{{ url_for('main.screening') }}" class="navbar__cta" id="nav-cta-btn">
-          Start Screening
-        </a>
+        
+        <!-- Grouped Screening Dropdown -->
+        <div class="navbar__dropdown" id="screeningDropdown">
+          <button type="button" class="navbar__cta navbar__dropdown-toggle" id="nav-cta-btn" aria-expanded="false" aria-haspopup="true">
+            <span>Start Screening</span>
+            <svg class="dropdown-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div class="navbar__dropdown-menu" role="menu" aria-labelledby="nav-cta-btn">
+            <a href="{{ url_for('main.screening') }}" class="dropdown-item" role="menuitem">
+              <div class="dropdown-item__icon dropdown-item__icon--single">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </div>
+              <div class="dropdown-item__text">
+                <span class="dropdown-item__title">Single Screening</span>
+                <span class="dropdown-item__desc">7-step interactive questionnaire (~3 min)</span>
+              </div>
+            </a>
+            <a href="{{ url_for('main.batch') }}" class="dropdown-item" role="menuitem">
+              <div class="dropdown-item__icon dropdown-item__icon--batch">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+              </div>
+              <div class="dropdown-item__text">
+                <span class="dropdown-item__title">Batch Screening</span>
+                <span class="dropdown-item__desc">Bulk CSV or Excel dataset upload</span>
+              </div>
+            </a>
+          </div>
+        </div>
       </nav>
     </div>
   </header>
@@ -56,10 +94,41 @@
         <a href="{{ url_for('main.index') }}#how-it-works">How it works</a>
         <a href="{{ url_for('main.index') }}#features">Features</a>
         <a href="{{ url_for('main.index') }}#model-reliability">Accuracy &amp; Reliability</a>
-        <a href="{{ url_for('main.screening') }}">Free Screening</a>
+        <a href="{{ url_for('main.screening') }}">Single Screening</a>
+        <a href="{{ url_for('main.batch') }}">Batch Screening</a>
       </nav>
     </div>
   </footer>
+
+  <script>
+    (function () {
+      const dropdown = document.getElementById('screeningDropdown');
+      const toggleBtn = document.getElementById('nav-cta-btn');
+      if (!dropdown || !toggleBtn) return;
+
+      toggleBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const isExpanded = toggleBtn.getAttribute('aria-expanded') === 'true';
+        toggleBtn.setAttribute('aria-expanded', !isExpanded);
+        dropdown.classList.toggle('open');
+      });
+
+      document.addEventListener('click', function (e) {
+        if (!dropdown.contains(e.target)) {
+          toggleBtn.setAttribute('aria-expanded', 'false');
+          dropdown.classList.remove('open');
+        }
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && dropdown.classList.contains('open')) {
+          toggleBtn.setAttribute('aria-expanded', 'false');
+          dropdown.classList.remove('open');
+          toggleBtn.focus();
+        }
+      });
+    })();
+  </script>
 
   {% block extra_scripts %}{% endblock %}
 </body>

@@ -12,14 +12,25 @@ import os
 import threading
 import uuid
 
+import io
+
 from flask import (
     Blueprint,
     jsonify,
     redirect,
     render_template,
     request,
+    send_file,
     session,
     url_for,
+)
+from app.batch_service import (
+    FEATURE_COLUMNS,
+    FEATURE_LABELS,
+    export_results,
+    generate_template,
+    parse_and_validate_file,
+    run_batch_prediction,
 )
 
 main = Blueprint("main", __name__)
@@ -658,4 +669,145 @@ def result():
         nickname=nickname,
         explanation=explanation,
         job_id=job_id,
+    )
+
+
+# =============================================================================
+# BATCH PREDICTION ROUTES
+# =============================================================================
+
+# In-memory storage for processed batch prediction results
+_batch_cache: dict[str, dict] = {}
+
+
+@main.route("/batch")
+def batch():
+    """Render the Batch CSV / Excel Screening page."""
+    return render_template(
+        "batch.html",
+        columns=FEATURE_COLUMNS,
+        feature_labels=FEATURE_LABELS,
+    )
+
+
+@main.route("/batch/template")
+def batch_template():
+    """
+    Download a pre-formatted template (blank or sample) in CSV or Excel format.
+
+    Query parameters:
+        format (str): 'csv' (default) or 'xlsx' / 'excel'
+        sample (bool/str): '1', 'true', or 'yes' to include sample data rows
+    """
+    file_format = request.args.get("format", "csv").strip().lower()
+    sample_param = request.args.get("sample", "0").strip().lower()
+    include_sample = sample_param in {"1", "true", "yes"}
+
+    file_bytes, mimetype, filename = generate_template(
+        file_format=file_format, sample=include_sample
+    )
+
+    return send_file(
+        io.BytesIO(file_bytes),
+        mimetype=mimetype,
+        as_attachment=True,
+        download_name=filename,
+    )
+
+
+@main.route("/batch/predict", methods=["POST"])
+def batch_predict():
+    """
+    Process an uploaded CSV or Excel file, validate all rows, run batch
+    predictions using the SVM model & scaler, and return results JSON.
+    """
+    if "file" not in request.files:
+        return jsonify({
+            "success": False,
+            "errors": ["No file was uploaded. Please choose a CSV or Excel file."],
+        }), 400
+
+    file = request.files["file"]
+    if not file or file.filename == "":
+        return jsonify({
+            "success": False,
+            "errors": ["No file selected. Please select a valid file to upload."],
+        }), 400
+
+    filename = file.filename or "upload.csv"
+    try:
+        file_bytes = file.read()
+    except Exception as exc:
+        return jsonify({
+            "success": False,
+            "errors": [f"Error reading uploaded file: {str(exc)}"],
+        }), 400
+
+    # 1. Parse and validate file content
+    df_cleaned, errors, warnings = parse_and_validate_file(file_bytes, filename)
+    if errors:
+        return jsonify({
+            "success": False,
+            "errors": errors,
+            "warnings": warnings,
+        }), 400
+
+    # 2. Run vectorized prediction pipeline
+    try:
+        results = run_batch_prediction(df_cleaned, model, scaler)
+    except Exception as exc:
+        return jsonify({
+            "success": False,
+            "errors": [f"Prediction error: {str(exc)}"],
+        }), 500
+
+    # 3. Cache results for export download
+    batch_id = str(uuid.uuid4())
+    # Keep cache from growing unbounded
+    if len(_batch_cache) > 50:
+        oldest_key = next(iter(_batch_cache))
+        _batch_cache.pop(oldest_key, None)
+
+    _batch_cache[batch_id] = results
+
+    return jsonify({
+        "success": True,
+        "batch_id": batch_id,
+        "filename": filename,
+        "summary": results["summary"],
+        "rows": results["rows"],
+        "columns": FEATURE_COLUMNS,
+        "feature_labels": FEATURE_LABELS,
+        "warnings": warnings,
+    })
+
+
+@main.route("/batch/export", methods=["GET", "POST"])
+def batch_export():
+    """
+    Export processed batch results to CSV or Excel.
+
+    Accepts batch_id and format ('csv' or 'xlsx') via query parameters or JSON.
+    """
+    if request.method == "POST" and request.is_json:
+        data = request.get_json(silent=True) or {}
+        batch_id = data.get("batch_id")
+        file_format = data.get("format", "csv")
+    else:
+        batch_id = request.args.get("batch_id")
+        file_format = request.args.get("format", "csv")
+
+    if not batch_id or batch_id not in _batch_cache:
+        return jsonify({
+            "error": "Batch session not found or has expired. Please run the batch screening again.",
+        }), 404
+
+    results = _batch_cache[batch_id]
+    file_bytes, mimetype, filename = export_results(results, file_format=file_format)
+
+    return send_file(
+        io.BytesIO(file_bytes),
+        mimetype=mimetype,
+        as_attachment=True,
+        download_name=filename,
     )
