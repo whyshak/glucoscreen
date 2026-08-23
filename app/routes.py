@@ -16,6 +16,8 @@ import io
 
 from flask import (
     Blueprint,
+    abort,
+    current_app,
     jsonify,
     redirect,
     render_template,
@@ -31,6 +33,12 @@ from app.batch_service import (
     generate_template,
     parse_and_validate_file,
     run_batch_prediction,
+)
+from app.evaluation_service import (
+    export_evaluation_results,
+    generate_labeled_template,
+    parse_and_validate_labeled_file,
+    run_model_evaluation,
 )
 
 main = Blueprint("main", __name__)
@@ -811,3 +819,174 @@ def batch_export():
         as_attachment=True,
         download_name=filename,
     )
+
+
+# =============================================================================
+# DEVELOPER-ONLY EVALUATION & BENCHMARKING ROUTES (HIDDEN / LOCALHOST ONLY)
+# =============================================================================
+
+# In-memory storage for processed developer evaluation sessions
+_eval_cache: dict[str, dict] = {}
+
+
+def _is_local_request() -> bool:
+    """Check if the incoming request is originating from localhost / loopback."""
+    remote_addr = (request.remote_addr or "").strip()
+    return remote_addr in {"127.0.0.1", "::1", "localhost"}
+
+
+def _is_debug_mode() -> bool:
+    """Check if the Flask app is running in debug mode or testing mode."""
+    return bool(
+        current_app.debug
+        or current_app.config.get("DEBUG", False)
+        or current_app.config.get("TESTING", False)
+    )
+
+
+def _check_debug_access() -> None:
+    """
+    Strict developer-only access guard.
+    Ensures route is only accessible when running in debug/testing mode from localhost.
+    Aborts with 404 Not Found otherwise so route is completely invisible and non-functional in production.
+    """
+    if not (_is_debug_mode() and _is_local_request()):
+        abort(404)
+
+
+@main.route("/debug/evaluate", methods=["GET", "POST"])
+def debug_evaluate():
+    """
+    Developer-only route for evaluating a labeled test dataset against the SVM model.
+
+    - GET: Renders the evaluation dashboard.
+    - POST: Processes an uploaded test dataset (CSV/XLSX with X and y), runs predictions,
+      computes classification metrics (Accuracy, Precision, Recall, Specificity, F1, Confusion Matrix),
+      and returns row-by-row comparisons.
+    """
+    _check_debug_access()
+
+    if request.method == "GET":
+        return render_template(
+            "debug_evaluate.html",
+            columns=FEATURE_COLUMNS,
+            feature_labels=FEATURE_LABELS,
+        )
+
+    # POST Handling: Process labeled test file
+    if "file" not in request.files:
+        return jsonify({
+            "success": False,
+            "errors": ["No file was uploaded. Please upload a labeled CSV or Excel test dataset."],
+        }), 400
+
+    file = request.files["file"]
+    if not file or file.filename == "":
+        return jsonify({
+            "success": False,
+            "errors": ["No file selected. Please select a valid test dataset to evaluate."],
+        }), 400
+
+    filename = file.filename or "test_dataset.csv"
+    try:
+        file_bytes = file.read()
+    except Exception as exc:
+        return jsonify({
+            "success": False,
+            "errors": [f"Error reading uploaded file: {str(exc)}"],
+        }), 400
+
+    # 1. Parse and validate features (X) and ground truth target (y)
+    df_cleaned, y_actual, target_col, errors, warnings = parse_and_validate_labeled_file(file_bytes, filename)
+    if errors:
+        return jsonify({
+            "success": False,
+            "errors": errors,
+            "warnings": warnings,
+        }), 400
+
+    # 2. Run evaluation pipeline
+    try:
+        eval_results = run_model_evaluation(df_cleaned, y_actual, model, scaler)
+    except Exception as exc:
+        return jsonify({
+            "success": False,
+            "errors": [f"Evaluation error: {str(exc)}"],
+        }), 500
+
+    # 3. Cache results for export
+    eval_id = str(uuid.uuid4())
+    if len(_eval_cache) > 50:
+        oldest_key = next(iter(_eval_cache))
+        _eval_cache.pop(oldest_key, None)
+
+    _eval_cache[eval_id] = eval_results
+
+    return jsonify({
+        "success": True,
+        "eval_id": eval_id,
+        "filename": filename,
+        "target_column": target_col,
+        "metrics": eval_results["metrics"],
+        "rows": eval_results["rows"],
+        "columns": FEATURE_COLUMNS,
+        "feature_labels": FEATURE_LABELS,
+        "warnings": warnings,
+    })
+
+
+@main.route("/debug/evaluate/template", methods=["GET"])
+def debug_evaluate_template():
+    """
+    Download a sample or blank labeled test template (CSV/Excel) containing
+    both the 21 health indicator feature columns and the ground-truth target column.
+    """
+    _check_debug_access()
+
+    file_format = request.args.get("format", "csv").strip().lower()
+    sample_param = request.args.get("sample", "1").strip().lower()
+    include_sample = sample_param in {"1", "true", "yes"}
+
+    file_bytes, mimetype, filename = generate_labeled_template(
+        file_format=file_format, sample=include_sample
+    )
+
+    return send_file(
+        io.BytesIO(file_bytes),
+        mimetype=mimetype,
+        as_attachment=True,
+        download_name=filename,
+    )
+
+
+@main.route("/debug/evaluate/export", methods=["GET", "POST"])
+def debug_evaluate_export():
+    """
+    Export the complete comparative evaluation results (Actual vs. Predicted,
+    Probability scores, Match/Mismatch flags, Error categorizations, and features) to CSV or Excel.
+    """
+    _check_debug_access()
+
+    if request.method == "POST" and request.is_json:
+        data = request.get_json(silent=True) or {}
+        eval_id = data.get("eval_id")
+        file_format = data.get("format", "csv")
+    else:
+        eval_id = request.args.get("eval_id")
+        file_format = request.args.get("format", "csv")
+
+    if not eval_id or eval_id not in _eval_cache:
+        return jsonify({
+            "error": "Evaluation session not found or has expired. Please run the evaluation again.",
+        }), 404
+
+    results = _eval_cache[eval_id]
+    file_bytes, mimetype, filename = export_evaluation_results(results, file_format=file_format)
+
+    return send_file(
+        io.BytesIO(file_bytes),
+        mimetype=mimetype,
+        as_attachment=True,
+        download_name=filename,
+    )
+
