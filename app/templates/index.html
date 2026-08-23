@@ -1,7 +1,8 @@
 {% extends "_base.html" %}
 
 {% block title %}GlucoScreen — Know Your Diabetes Risk in Minutes{% endblock %}
-{% block description %}A quick, science-based questionnaire estimates whether you may be at risk of diabetes — then helps you take the next step with clear guidance.{% endblock %}
+{% block description %}A quick, science-based questionnaire estimates whether you may be at risk of diabetes — then
+helps you take the next step with clear guidance.{% endblock %}
 
 {% block content %}
 
@@ -30,10 +31,9 @@
         <a href="{{ url_for('main.screening') }}" class="btn-primary" id="hero-start-btn">
           Start free screening
           <!-- Arrow right -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2.5"
-               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14M12 5l7 7-7 7" />
           </svg>
         </a>
         <a href="#how-it-works" class="btn-secondary" id="hero-learn-btn">
@@ -51,15 +51,14 @@
         <div class="hero__gauge-ring" aria-hidden="true">
           <svg viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg">
             <!-- Track -->
-            <path d="M 20 100 A 80 80 0 0 1 180 100"
-                  fill="none" stroke="#e2e8f0" stroke-width="14" stroke-linecap="round"/>
+            <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#e2e8f0" stroke-width="14"
+              stroke-linecap="round" />
             <!-- Fill — ~32% of the semicircle -->
-            <path d="M 20 100 A 80 80 0 0 1 180 100"
-                  fill="none" stroke="#14b8a6" stroke-width="14" stroke-linecap="round"
-                  stroke-dasharray="251" stroke-dashoffset="170"
-                  style="transition: stroke-dashoffset 1s ease;"/>
+            <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#14b8a6" stroke-width="14"
+              stroke-linecap="round" stroke-dasharray="251" stroke-dashoffset="170"
+              style="transition: stroke-dashoffset 1s ease;" />
             <!-- Needle dot -->
-            <circle cx="80" cy="38" r="7" fill="#0d9488"/>
+            <circle cx="80" cy="38" r="7" fill="#0d9488" />
           </svg>
         </div>
 
@@ -69,15 +68,21 @@
         <div class="hero__card-factors" aria-hidden="true">
           <div class="factor-row">
             <span>BMI</span>
-            <div class="factor-bar-wrap"><div class="factor-bar" style="width:55%"></div></div>
+            <div class="factor-bar-wrap">
+              <div class="factor-bar" style="width:55%"></div>
+            </div>
           </div>
           <div class="factor-row">
             <span>Blood Pressure</span>
-            <div class="factor-bar-wrap"><div class="factor-bar" style="width:30%"></div></div>
+            <div class="factor-bar-wrap">
+              <div class="factor-bar" style="width:30%"></div>
+            </div>
           </div>
           <div class="factor-row">
             <span>Physical Activity</span>
-            <div class="factor-bar-wrap"><div class="factor-bar" style="width:75%"></div></div>
+            <div class="factor-bar-wrap">
+              <div class="factor-bar" style="width:75%"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -123,12 +128,11 @@
         <span class="step-card__num">01</span>
         <div class="step-card__icon" aria-hidden="true">
           <!-- Clipboard icon -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-               stroke-linejoin="round">
-            <rect x="9" y="2" width="6" height="3" rx="1"/>
-            <path d="M16 4H18a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/>
-            <path d="M9 12h6M9 16h4"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="2" width="6" height="3" rx="1" />
+            <path d="M16 4H18a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2" />
+            <path d="M9 12h6M9 16h4" />
           </svg>
         </div>
         <h3 class="step-card__title">Answer a few questions</h3>
@@ -142,10 +146,9 @@
         <span class="step-card__num">02</span>
         <div class="step-card__icon" aria-hidden="true">
           <!-- Heart pulse icon -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-               stroke-linejoin="round">
-            <path d="M3 12h3l3-9 3 18 3-9h3"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12h3l3-9 3 18 3-9h3" />
           </svg>
         </div>
         <h3 class="step-card__title">Get your risk score</h3>
@@ -159,11 +162,10 @@
         <span class="step-card__num">03</span>
         <div class="step-card__icon" aria-hidden="true">
           <!-- Sparkles icon -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-               stroke-linejoin="round">
-            <path d="M12 3v1m0 16v1M4.22 4.22l.7.7m12.16 12.16.7.7M3 12h1m16 0h1m-4.22-7.78.7-.7M6.92 17.08l-.7.7"/>
-            <circle cx="12" cy="12" r="4"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3v1m0 16v1M4.22 4.22l.7.7m12.16 12.16.7.7M3 12h1m16 0h1m-4.22-7.78.7-.7M6.92 17.08l-.7.7" />
+            <circle cx="12" cy="12" r="4" />
           </svg>
         </div>
         <h3 class="step-card__title">Act on clear guidance</h3>
@@ -191,11 +193,10 @@
 
       <article class="feature-card">
         <div class="feature-card__icon" aria-hidden="true">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-               stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M12 8v4l3 3"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 8v4l3 3" />
           </svg>
         </div>
         <h3 class="feature-card__title">Personalised risk estimate</h3>
@@ -206,10 +207,10 @@
 
       <article class="feature-card">
         <div class="feature-card__icon" aria-hidden="true">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-               stroke-linejoin="round">
-            <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0" />
           </svg>
         </div>
         <h3 class="feature-card__title">Diet &amp; meal guidance</h3>
@@ -220,10 +221,9 @@
 
       <article class="feature-card">
         <div class="feature-card__icon" aria-hidden="true">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-               stroke-linejoin="round">
-            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
           </svg>
         </div>
         <h3 class="feature-card__title">Exercise plans</h3>
@@ -234,10 +234,9 @@
 
       <article class="feature-card">
         <div class="feature-card__icon" aria-hidden="true">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-               stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
           </svg>
         </div>
         <h3 class="feature-card__title">Early awareness</h3>
@@ -248,11 +247,10 @@
 
       <article class="feature-card">
         <div class="feature-card__icon" aria-hidden="true">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-               stroke-linejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-            <path d="M7 11V7a5 5 0 0110 0v4"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0110 0v4" />
           </svg>
         </div>
         <h3 class="feature-card__title">Private by design</h3>
@@ -263,11 +261,10 @@
 
       <article class="feature-card">
         <div class="feature-card__icon" aria-hidden="true">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-               stroke-linejoin="round">
-            <polyline points="9 11 12 14 22 4"/>
-            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 11 12 14 22 4" />
+            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
           </svg>
         </div>
         <h3 class="feature-card__title">CDC-validated indicators</h3>
@@ -278,19 +275,21 @@
 
       <article class="feature-card">
         <div class="feature-card__icon" aria-hidden="true">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-               stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="16" y1="13" x2="8" y2="13"/>
-            <line x1="16" y1="17" x2="8" y2="17"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
           </svg>
         </div>
         <h3 class="feature-card__title">Batch CSV/Excel Analysis</h3>
         <p class="feature-card__body">
-          Upload bulk cohorts in CSV or Excel format to calculate diabetes risk probabilities for hundreds of patients at once.
-          <a href="{{ url_for('main.batch') }}" style="color:var(--brand-600);font-weight:600;display:block;margin-top:0.35rem;">Try Bulk Screening &rarr;</a>
+          Upload bulk cohorts in CSV or Excel format to calculate diabetes risk probabilities for hundreds of patients
+          at once.
+          <a href="{{ url_for('main.batch') }}"
+            style="color:var(--brand-600);font-weight:600;display:block;margin-top:0.35rem;">Try Bulk Screening
+            &rarr;</a>
         </p>
       </article>
 
@@ -305,7 +304,8 @@
       <p class="section__eyebrow">Model Performance &amp; Reliability</p>
       <h2 class="section__title">Clinical-grade accuracy, explained simply</h2>
       <p class="section__sub">
-        Trained on validated CDC BRFSS epidemiological health survey records, our Support Vector Machine model is tuned to prioritize early detection and trustworthy risk assessment.
+        Trained on validated CDC BRFSS epidemiological health survey records, our Support Vector Machine model is tuned
+        to prioritize early detection and trustworthy risk assessment.
       </p>
     </div>
 
@@ -328,7 +328,8 @@
         <div class="reliability-card__num">82.9%</div>
         <div class="reliability-card__title">Discriminative Ability</div>
         <p class="reliability-card__desc">
-          Strong capability to distinguish elevated risk from low risk across diverse demographics and health backgrounds.
+          Strong capability to distinguish elevated risk from low risk across diverse demographics and health
+          backgrounds.
         </p>
       </article>
 
@@ -360,35 +361,35 @@
 
       <!-- Tab Navigation Buttons -->
       <div class="reliability-tabs-nav" role="tablist" aria-label="Model metrics breakdown">
-        <button type="button" class="reliability-tab-btn active" role="tab" id="tab-btn-detection"
-                aria-selected="true" aria-controls="panel-detection">
+        <button type="button" class="reliability-tab-btn active" role="tab" id="tab-btn-detection" aria-selected="true"
+          aria-controls="panel-detection">
           <!-- Shield icon -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
           </svg>
           Detection &amp; Safety
         </button>
 
-        <button type="button" class="reliability-tab-btn" role="tab" id="tab-btn-confidence"
-                aria-selected="false" aria-controls="panel-confidence">
+        <button type="button" class="reliability-tab-btn" role="tab" id="tab-btn-confidence" aria-selected="false"
+          aria-controls="panel-confidence">
           <!-- Check circle icon -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-            <polyline points="22 4 12 14.01 9 11.01"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
           </svg>
           Reliability &amp; Confidence
         </button>
 
-        <button type="button" class="reliability-tab-btn" role="tab" id="tab-btn-benchmark"
-                aria-selected="false" aria-controls="panel-benchmark">
+        <button type="button" class="reliability-tab-btn" role="tab" id="tab-btn-benchmark" aria-selected="false"
+          aria-controls="panel-benchmark">
           <!-- Bar chart / gauge icon -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="18" y1="20" x2="18" y2="10"/>
-            <line x1="12" y1="20" x2="12" y2="4"/>
-            <line x1="6" y1="20" x2="6" y2="14"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="20" x2="18" y2="10" />
+            <line x1="12" y1="20" x2="12" y2="4" />
+            <line x1="6" y1="20" x2="6" y2="14" />
           </svg>
           Overall Benchmarks
         </button>
@@ -400,10 +401,12 @@
           <div class="panel-text">
             <h3>Why early detection matters most</h3>
             <p>
-              In health screening, the cost of a <em>missed risk</em> is much higher than a false alarm. A false alarm simply prompts a routine checkup, whereas a missed case could delay life-changing lifestyle interventions.
+              In health screening, the cost of a <em>missed risk</em> is much higher than a false alarm. A false alarm
+              simply prompts a routine checkup, whereas a missed case could delay life-changing lifestyle interventions.
             </p>
             <div class="panel-highlight-box">
-              <strong>Clinical Design Goal:</strong> Our model is deliberately calibrated to prioritize a high <strong>83.0% sensitivity rate</strong>, keeping the miss rate down to only <strong>17.0%</strong>.
+              <strong>Clinical Design Goal:</strong> Our model is deliberately calibrated to prioritize a high
+              <strong>83.0% sensitivity rate</strong>, keeping the miss rate down to only <strong>17.0%</strong>.
             </div>
           </div>
 
@@ -411,7 +414,8 @@
             <!-- Recall -->
             <div class="metric-row">
               <div class="metric-row__header">
-                <span class="metric-row__title">High-Risk Sensitivity <span class="metric-row__sub">(Recall)</span></span>
+                <span class="metric-row__title">High-Risk Sensitivity <span
+                    class="metric-row__sub">(Recall)</span></span>
                 <span class="metric-row__value">82.95%</span>
               </div>
               <div class="metric-bar-track">
@@ -423,7 +427,8 @@
             <!-- FNR -->
             <div class="metric-row">
               <div class="metric-row__header">
-                <span class="metric-row__title">Miss Rate <span class="metric-row__sub">(False Negative Rate)</span></span>
+                <span class="metric-row__title">Miss Rate <span class="metric-row__sub">(False Negative
+                    Rate)</span></span>
                 <span class="metric-row__value" style="color:#0284c7;">17.05%</span>
               </div>
               <div class="metric-bar-track">
@@ -441,10 +446,12 @@
           <div class="panel-text">
             <h3>Understanding your risk score</h3>
             <p>
-              Whether your results show a low or elevated risk level, here is what the statistical confidence means for your day-to-day health management.
+              Whether your results show a low or elevated risk level, here is what the statistical confidence means for
+              your day-to-day health management.
             </p>
             <div class="panel-highlight-box">
-              <strong>Trustworthy Outcomes:</strong> Low-risk outcomes offer ~80% statistical certainty, while moderate/high alerts provide ~72% precision for actionable doctor discussions.
+              <strong>Trustworthy Outcomes:</strong> Low-risk outcomes offer ~80% statistical certainty, while
+              moderate/high alerts provide ~72% precision for actionable doctor discussions.
             </div>
           </div>
 
@@ -464,25 +471,29 @@
             <!-- Precision -->
             <div class="metric-row">
               <div class="metric-row__header">
-                <span class="metric-row__title">Elevated-Risk Precision <span class="metric-row__sub">(Precision)</span></span>
+                <span class="metric-row__title">Elevated-Risk Precision <span
+                    class="metric-row__sub">(Precision)</span></span>
                 <span class="metric-row__value">71.79%</span>
               </div>
               <div class="metric-bar-track">
                 <div class="metric-bar-fill" style="width: 71.79%"></div>
               </div>
-              <span class="metric-row__desc">When flagged as elevated, ~72% accurately indicate true underlying risk factors.</span>
+              <span class="metric-row__desc">When flagged as elevated, ~72% accurately indicate true underlying risk
+                factors.</span>
             </div>
 
             <!-- Specificity -->
             <div class="metric-row">
               <div class="metric-row__header">
-                <span class="metric-row__title">Healthy Profile Specificity <span class="metric-row__sub">(Specificity)</span></span>
+                <span class="metric-row__title">Healthy Profile Specificity <span
+                    class="metric-row__sub">(Specificity)</span></span>
                 <span class="metric-row__value" style="color:#7c3aed;">67.41%</span>
               </div>
               <div class="metric-bar-track">
                 <div class="metric-bar-fill metric-bar-fill--purple" style="width: 67.41%"></div>
               </div>
-              <span class="metric-row__desc">Accurately confirms low risk for individuals with healthy lifestyle indicators.</span>
+              <span class="metric-row__desc">Accurately confirms low risk for individuals with healthy lifestyle
+                indicators.</span>
             </div>
           </div>
         </div>
@@ -494,10 +505,14 @@
           <div class="panel-text">
             <h3>Machine learning architecture</h3>
             <p>
-              GlucoScreen runs on a non-linear <strong>Radial Basis Function (RBF) Support Vector Machine (SVM)</strong> combined with standardized scaling. It was trained and evaluated on balanced CDC health surveillance survey records.
+              GlucoScreen runs on a non-linear <strong>Radial Basis Function (RBF) Support Vector Machine (SVM)</strong>
+              combined with standardized scaling. It was trained and evaluated on balanced CDC health surveillance
+              survey records.
             </p>
             <div class="panel-highlight-box">
-              <strong>Generalization Power:</strong> An <strong>ROC-AUC of 82.9%</strong> and an <strong>F1 Score of 77.0%</strong> confirm the model performs reliably across diverse ages, BMIs, and backgrounds without overfitting.
+              <strong>Generalization Power:</strong> An <strong>ROC-AUC of 82.9%</strong> and an <strong>F1 Score of
+                77.0%</strong> confirm the model performs reliably across diverse ages, BMIs, and backgrounds without
+              overfitting.
             </div>
           </div>
 
@@ -505,7 +520,8 @@
             <!-- ROC AUC -->
             <div class="metric-row">
               <div class="metric-row__header">
-                <span class="metric-row__title">ROC Area Under Curve <span class="metric-row__sub">(ROC-AUC)</span></span>
+                <span class="metric-row__title">ROC Area Under Curve <span
+                    class="metric-row__sub">(ROC-AUC)</span></span>
                 <span class="metric-row__value" style="color:#0284c7;">82.90%</span>
               </div>
               <div class="metric-bar-track">
@@ -517,19 +533,22 @@
             <!-- F1 Score -->
             <div class="metric-row">
               <div class="metric-row__header">
-                <span class="metric-row__title">Harmonic Balanced Score <span class="metric-row__sub">(F1 Score)</span></span>
+                <span class="metric-row__title">Harmonic Balanced Score <span class="metric-row__sub">(F1
+                    Score)</span></span>
                 <span class="metric-row__value">76.97%</span>
               </div>
               <div class="metric-bar-track">
                 <div class="metric-bar-fill" style="width: 76.97%"></div>
               </div>
-              <span class="metric-row__desc">Harmonious balance between detection sensitivity and alert precision.</span>
+              <span class="metric-row__desc">Harmonious balance between detection sensitivity and alert
+                precision.</span>
             </div>
 
             <!-- Accuracy -->
             <div class="metric-row">
               <div class="metric-row__header">
-                <span class="metric-row__title">Overall Test Accuracy <span class="metric-row__sub">(Accuracy)</span></span>
+                <span class="metric-row__title">Overall Test Accuracy <span
+                    class="metric-row__sub">(Accuracy)</span></span>
                 <span class="metric-row__value" style="color:#16a34a;">75.18%</span>
               </div>
               <div class="metric-bar-track">
@@ -546,15 +565,18 @@
     <!-- Medical Context Callout -->
     <div class="reliability-callout" role="note">
       <div class="reliability-callout__icon" aria-hidden="true">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="12" y1="16" x2="12" y2="12"/>
-          <line x1="12" y1="8" x2="12.01" y2="8"/>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="16" x2="12" y2="12" />
+          <line x1="12" y1="8" x2="12.01" y2="8" />
         </svg>
       </div>
       <div class="reliability-callout__text">
-        <strong>Prescreening vs. Clinical Diagnosis:</strong> GlucoScreen is an informational risk prescreening questionnaire that calculates statistical likelihood from self-reported CDC health indicators. It does not replace diagnostic blood tests (like HbA1c or Fasting Blood Glucose). We encourage sharing your results with a licensed healthcare professional.
+        <strong>Prescreening vs. Clinical Diagnosis:</strong> GlucoScreen is an informational risk prescreening
+        questionnaire that calculates statistical likelihood from self-reported CDC health indicators. It does not
+        replace diagnostic blood tests (like HbA1c or Fasting Blood Glucose). We encourage sharing your results with a
+        licensed healthcare professional.
       </div>
     </div>
 
@@ -562,17 +584,16 @@
 </section>
 
 <!-- ── CTA Banner ──────────────────────────────────────────────────────── -->
-<section class="section" aria-label="Call to action">
+<section class="section" id="cta-banner" aria-label="Call to action">
   <div class="container">
     <div class="cta-banner">
       <h2>Ready to know your risk?</h2>
       <p>It takes about 3 minutes. No account, no cost, no commitment.</p>
       <a href="{{ url_for('main.screening') }}" class="btn-white" id="cta-banner-btn">
         Start free screening
-        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="2.5"
-             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M5 12h14M12 5l7 7-7 7"/>
+        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 12h14M12 5l7 7-7 7" />
         </svg>
       </a>
     </div>
