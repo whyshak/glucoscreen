@@ -36,6 +36,14 @@
         <a href="{{ url_for('main.index') }}#how-it-works" class="navbar__link">How it works</a>
         <a href="{{ url_for('main.index') }}#features" class="navbar__link">Features</a>
         <a href="{{ url_for('main.index') }}#model-reliability" class="navbar__link">Accuracy &amp; Reliability</a>
+        <a href="{{ url_for('main.chat') }}" class="navbar__link navbar__link--assistant">
+          <span class="navbar__link-spark" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/>
+            </svg>
+          </span>
+          Dia Assistant
+        </a>
         
         <!-- Grouped Screening Dropdown -->
         <div class="navbar__dropdown" id="screeningDropdown">
@@ -94,12 +102,18 @@
         <a href="{{ url_for('main.index') }}#how-it-works">How it works</a>
         <a href="{{ url_for('main.index') }}#features">Features</a>
         <a href="{{ url_for('main.index') }}#model-reliability">Accuracy &amp; Reliability</a>
+        <a href="{{ url_for('main.chat') }}">Dia Assistant</a>
         <a href="{{ url_for('main.screening') }}">Single Screening</a>
         <a href="{{ url_for('main.batch') }}">Batch Screening</a>
       </nav>
     </div>
   </footer>
 
+  <!-- ── Global Dia Chatbot Floating Widget ───────────────────────────── -->
+  {% include '_chat_widget.html' %}
+
+  <!-- ── Scripts ────────────────────────────────────────────────────────── -->
+  <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
   <script>
     (function () {
       const dropdown = document.getElementById('screeningDropdown');

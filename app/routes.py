@@ -40,6 +40,11 @@ from app.evaluation_service import (
     parse_and_validate_labeled_file,
     run_model_evaluation,
 )
+from app.chatbot_service import (
+    QUICK_PROMPTS,
+    WELCOME_MESSAGE,
+    generate_mock_chat_response,
+)
 
 main = Blueprint("main", __name__)
 
@@ -989,4 +994,138 @@ def debug_evaluate_export():
         as_attachment=True,
         download_name=filename,
     )
+
+
+# =============================================================================
+# DIA CHATBOT & RAG PIPELINE PLACEHOLDER ROUTES
+# =============================================================================
+
+@main.route("/chat", methods=["GET"])
+def chat():
+    """
+    Render the dedicated full-page Dia Diabetes Assistant chat interface.
+    """
+    return render_template(
+        "chat.html",
+        quick_prompts=QUICK_PROMPTS,
+        welcome_message=WELCOME_MESSAGE,
+    )
+
+
+@main.route("/api/chat", methods=["POST"])
+def api_chat():
+    """
+    API endpoint to handle incoming conversational user messages from the Dia chat interface.
+
+    Request JSON payload:
+        {
+            "message": str,                # User prompt / inquiry
+            "history": list[dict] | None   # Optional conversation history
+        }
+
+    Response JSON:
+        {
+            "text": str,                   # Synthesized response or educational guidance
+            "suggestions": list[str],      # Recommended follow-up question chips
+            "rag_ready": bool              # Flag indicating if response is from full RAG or mock
+        }
+    """
+    if not request.is_json:
+        return jsonify({"error": "Request body must be JSON."}), 400
+
+    data = request.get_json(silent=True) or {}
+    user_message = (data.get("message") or "").strip()
+    history = data.get("history", [])
+
+    if not user_message:
+        return jsonify({"error": "Please provide a valid message."}), 400
+
+    if len(user_message) > 1000:
+        return jsonify({
+            "error": "Message is too long. Please keep your message under 1,000 characters."
+        }), 400
+
+    # =========================================================================
+    # RAG PIPELINE INTEGRATION ROADMAP (FUTURE IMPLEMENTATION)
+    # =========================================================================
+    #
+    # TODO (RAG Step 1): VECTOR DATABASE & EMBEDDING INDEX INITIALIZATION
+    # -------------------------------------------------------------------------
+    # 1. Connect to or load the persistent vector database (e.g., ChromaDB, FAISS,
+    #    Pinecone, or Qdrant) populated from the scraped medical corpus:
+    #    Repository: https://github.com/whyshak/diabetesscraped
+    # 2. Source Documents include:
+    #    - CDC Diabetes Factsheets and prevention guides
+    #    - NIDDK (National Institute of Diabetes and Digestive and Kidney Diseases) clinical articles
+    #    - Evidence-based dietary guidelines, glycemic index charts, and exercise regimens
+    # 3. Use an embedding model (e.g., OpenAI text-embedding-3-small, HuggingFace
+    #    sentence-transformers/all-MiniLM-L6-v2, or Vertex AI embeddings) to generate
+    #    dense vector representations for chunked documents.
+    #
+    # Example Target Code:
+    #   vector_store = Chroma(
+    #       persist_directory="./rag_store/chroma_db",
+    #       embedding_function=OpenAIEmbeddings(model="text-embedding-3-small")
+    #   )
+    #
+    # -------------------------------------------------------------------------
+    # TODO (RAG Step 2): CONTEXT RETRIEVAL (SEMANTIC SEARCH)
+    # -------------------------------------------------------------------------
+    # 1. Generate query embedding for `user_message`.
+    # 2. Perform similarity search (e.g., cosine similarity / MMR - Maximal Marginal Relevance)
+    #    to fetch top-k (k=3 to 5) most relevant context chunks from the vector database.
+    # 3. Apply relevance score thresholds and filter out low-confidence chunks.
+    #
+    # Example Target Code:
+    #   retrieved_docs = vector_store.similarity_search_with_relevance_scores(
+    #       query=user_message,
+    #       k=4,
+    #       score_threshold=0.65
+    #   )
+    #   context_text = "\n\n".join([doc.page_content for doc, score in retrieved_docs])
+    #
+    # -------------------------------------------------------------------------
+    # TODO (RAG Step 3): PROMPT TEMPLATING & LLM INVOCATION
+    # -------------------------------------------------------------------------
+    # 1. Construct a clinical-safety-aligned system prompt with strict guardrails:
+    #    - Informational & educational tone; never diagnose or prescribe.
+    #    - Ground answers strictly in the retrieved context to avoid hallucinations.
+    #    - Include medical disclaimer reminders when addressing medication or symptoms.
+    # 2. Format prompt combining:
+    #    - System instructions
+    #    - Retrieved knowledge context
+    #    - Recent conversation history (for multi-turn dialogue context)
+    #    - User message
+    # 3. Call LLM (e.g., Gemini 1.5 Pro/Flash, GPT-4o-mini, Anthropic Claude, or local Ollama).
+    #
+    # Example Target Code:
+    #   system_prompt = (
+    #       "You are Dia, an empathetic and knowledgeable diabetes health assistant for GlucoScreen. "
+    #       "Answer the user's question using ONLY the provided medical context below. "
+    #       "If the answer cannot be determined from the context, state that clearly and advise "
+    #       "consulting a doctor. Include relevant suggestions for follow-up questions."
+    #   )
+    #   response = llm.invoke(messages=[
+    #       SystemMessage(content=system_prompt),
+    #       *formatted_history,
+    #       HumanMessage(content=f"Context:\n{context_text}\n\nQuestion:\n{user_message}")
+    #   ])
+    #
+    # -------------------------------------------------------------------------
+    # TODO (RAG Step 4): RESPONSE SYNTHESIS & DYNAMIC SUGGESTIONS
+    # -------------------------------------------------------------------------
+    # 1. Parse LLM response text and extract synthesized medical advice.
+    # 2. Generate 2-4 contextual follow-up suggestions tailored to the topic discussed.
+    # 3. Return structured JSON payload to the frontend.
+    # =========================================================================
+
+    # ── Current Phase: Safe Educational Mock / Prototype Fallback Response ──
+    mock_reply = generate_mock_chat_response(user_message)
+
+    return jsonify({
+        "text": mock_reply["text"],
+        "suggestions": mock_reply["suggestions"],
+        "rag_ready": False,
+    })
+
 

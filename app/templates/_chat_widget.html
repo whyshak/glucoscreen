@@ -1,0 +1,87 @@
+<!-- ── Dia Floating Chatbot Widget ───────────────────────────────────────── -->
+<div id="dia-chat-container" class="dia-widget-container" aria-label="Dia Diabetes Assistant">
+
+  <!-- Floating Trigger Button -->
+  <button id="dia-chat-toggle" class="dia-chat-toggle" aria-label="Open Dia Diabetes Assistant" aria-expanded="false">
+    <span class="dia-chat-toggle__avatar">
+      <svg class="dia-icon-spark" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/>
+      </svg>
+    </span>
+    <span class="dia-chat-toggle__label">Ask Dia</span>
+    <span class="dia-chat-toggle__online-dot" aria-hidden="true"></span>
+  </button>
+
+  <!-- Floating Chat Window / Modal -->
+  <div id="dia-chat-window" class="dia-chat-window" role="dialog" aria-modal="false" aria-labelledby="dia-widget-title" hidden>
+    
+    <!-- Widget Header -->
+    <div class="dia-chat-header">
+      <div class="dia-chat-header__info">
+        <div class="dia-avatar dia-avatar--sm">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/>
+          </svg>
+        </div>
+        <div>
+          <h2 id="dia-widget-title" class="dia-chat-header__title">Dia · Diabetes Assistant</h2>
+          <p class="dia-chat-header__status">
+            <span class="dia-status-dot" aria-hidden="true"></span>
+            Online — ready to help
+          </p>
+        </div>
+      </div>
+      <div class="dia-chat-header__actions">
+        <a href="{{ url_for('main.chat') }}" class="dia-header-btn" title="Open Full Page Assistant" aria-label="Open Full Page Assistant">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+          </svg>
+        </a>
+        <button type="button" id="dia-clear-chat" class="dia-header-btn" title="Reset Conversation" aria-label="Reset Conversation">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+        </button>
+        <button type="button" id="dia-chat-close" class="dia-header-btn" title="Close Assistant" aria-label="Close Assistant">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Chat Messages Scroll Area -->
+    <div id="dia-messages-scroll" class="dia-messages-body" tabindex="0" role="log" aria-live="polite">
+      <!-- Dynamic messages rendered by chat.js -->
+    </div>
+
+    <!-- Quick Prompts Row -->
+    <div class="dia-quick-prompts-wrapper">
+      <div id="dia-quick-prompts" class="dia-quick-prompts no-scrollbar">
+        <!-- Quick prompt chips generated dynamically -->
+      </div>
+    </div>
+
+    <!-- Input Form -->
+    <form id="dia-chat-form" class="dia-chat-input-container">
+      <textarea
+        id="dia-chat-input"
+        rows="1"
+        placeholder="Ask Dia anything about diabetes, diet, or exercise…"
+        aria-label="Your message to Dia"
+        maxlength="1000"
+      ></textarea>
+      <button type="submit" id="dia-chat-send" class="dia-chat-send-btn" aria-label="Send message" disabled>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </form>
+
+    <div class="dia-disclaimer-footer">
+      <span>Dia provides general info, not medical advice. Press Enter to send.</span>
+    </div>
+
+  </div>
+</div>
