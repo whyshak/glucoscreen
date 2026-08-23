@@ -1,0 +1,930 @@
+{% extends "_base.html" %}
+
+{% block title %}Batch Diabetes Risk Screening — GlucoScreen{% endblock %}
+{% block description %}Upload bulk patient datasets in CSV or Excel format to calculate diabetes risk probabilities and classifications in seconds.{% endblock %}
+
+{% block extra_head %}
+<style>
+  body {
+    background: linear-gradient(180deg, var(--brand-50) 0%, #ffffff 350px);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="batch-page">
+  <div class="container batch-container">
+
+    <!-- ── Page Header ───────────────────────────────────────────────────── -->
+    <div class="batch-header text-center">
+      <div class="hero__badge" style="display:inline-flex;margin-bottom:0.75rem;">
+        <span class="hero__badge-dot" aria-hidden="true"></span>
+        Clinical &amp; Population Bulk Analytics
+      </div>
+      <h1 class="batch-title">Batch Diabetes Risk Screening</h1>
+      <p class="batch-subtitle">
+        Upload a CSV or Excel dataset to evaluate diabetes risk in bulk using our validated SVM predictive pipeline.
+        Instant risk categorization, population breakdown, and full export.
+      </p>
+      
+      <div class="batch-nav-switch">
+        <a href="{{ url_for('main.screening') }}" class="switch-link">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          Single Patient Screening
+        </a>
+        <span class="switch-active">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+          Batch Dataset Upload
+        </span>
+      </div>
+    </div>
+
+    <!-- ── Step 1 & 2 Cards Grid ─────────────────────────────────────────── -->
+    <div class="batch-grid" id="uploadSection">
+      
+      <!-- Template & Format Info Card -->
+      <div class="batch-card batch-card--info">
+        <div class="batch-card__header">
+          <div class="batch-card__icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="batch-card__title">1. Download Template</h2>
+            <p class="batch-card__sub">Get pre-formatted headers matching the 21 CDC health indicators.</p>
+          </div>
+        </div>
+
+        <div class="batch-card__body">
+          <p class="text-sm text-muted mb-3">
+            Your file must include all 21 feature columns (e.g. <code>HighBP</code>, <code>BMI</code>, <code>GenHlth</code>, <code>Age</code>).
+            Use our blank or sample templates for best results.
+          </p>
+
+          <div class="template-actions">
+            <a href="{{ url_for('main.batch_template', format='csv') }}" class="btn-outline btn-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+              Blank CSV Template
+            </a>
+            <a href="{{ url_for('main.batch_template', format='xlsx') }}" class="btn-outline btn-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+              Blank Excel (.xlsx)
+            </a>
+            <a href="{{ url_for('main.batch_template', format='csv', sample=1) }}" class="btn-secondary btn-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+              Sample Pre-filled Data
+            </a>
+          </div>
+
+          <details class="feature-guide-accordion">
+            <summary class="feature-guide-summary">
+              <span>View Required Columns &amp; Data Types</span>
+              <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </summary>
+            <div class="feature-guide-content">
+              <div class="table-responsive">
+                <table class="guide-table">
+                  <thead>
+                    <tr>
+                      <th>Column Header</th>
+                      <th>Feature Name</th>
+                      <th>Accepted Values</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for col in columns %}
+                    <tr>
+                      <td><code>{{ col }}</code></td>
+                      <td>{{ feature_labels.get(col, col) }}</td>
+                      <td>
+                        {% if col in ['HighBP', 'HighChol', 'CholCheck', 'Smoker', 'Stroke', 'HeartDiseaseorAttack', 'PhysActivity', 'Fruits', 'Veggies', 'HvyAlcoholConsump', 'AnyHealthcare', 'NoDocbcCost', 'DiffWalk'] %}
+                          <code>0</code> (No) / <code>1</code> (Yes)
+                        {% elif col == 'Sex' %}
+                          <code>0</code> (Female) / <code>1</code> (Male)
+                        {% elif col == 'BMI' %}
+                          Continuous numeric (<code>10.0 – 100.0</code>)
+                        {% elif col == 'GenHlth' %}
+                          <code>1</code> (Excellent) to <code>5</code> (Poor)
+                        {% elif col in ['MentHlth', 'PhysHlth'] %}
+                          Days in last month (<code>0 – 30</code>)
+                        {% elif col == 'Age' %}
+                          Age Group <code>1–13</code> or Age in Years <code>18–120</code>
+                        {% elif col == 'Education' %}
+                          Level <code>1–6</code>
+                        {% elif col == 'Income' %}
+                          Category <code>1–8</code>
+                        {% endif %}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <!-- File Upload Dropzone Card -->
+      <div class="batch-card batch-card--upload">
+        <div class="batch-card__header">
+          <div class="batch-card__icon batch-card__icon--teal" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="batch-card__title">2. Upload Dataset</h2>
+            <p class="batch-card__sub">Select or drag &amp; drop your CSV or Excel file.</p>
+          </div>
+        </div>
+
+        <div class="batch-card__body">
+          <form id="batchUploadForm" enctype="multipart/form-data">
+            <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="File Upload Dropzone">
+              <input type="file" id="fileInput" name="file" accept=".csv, .xlsx, .xls" class="dropzone__input" />
+              
+              <div class="dropzone__content" id="dropzoneContent">
+                <div class="dropzone__icon-wrap">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
+                    <path d="M12 12v9"/>
+                    <path d="m16 16-4-4-4 4"/>
+                  </svg>
+                </div>
+                <p class="dropzone__primary-text">
+                  <strong>Click to browse</strong> or drag &amp; drop file here
+                </p>
+                <p class="dropzone__secondary-text">
+                  Supports <strong>.CSV</strong> and <strong>.XLSX</strong> (up to 10,000 records)
+                </p>
+              </div>
+
+              <!-- Selected File Info -->
+              <div class="dropzone__file-selected" id="fileSelectedInfo" style="display:none;">
+                <div class="file-info-box">
+                  <div class="file-info-icon" id="fileTypeIcon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                      <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                  </div>
+                  <div class="file-info-details">
+                    <span class="file-name" id="selectedFileName">dataset.csv</span>
+                    <span class="file-size text-muted" id="selectedFileSize">12.4 KB</span>
+                  </div>
+                  <button type="button" class="file-remove-btn" id="removeFileBtn" title="Remove file" aria-label="Remove file">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Validation Error Alert Container -->
+            <div class="batch-alert batch-alert--error" id="validationAlert" style="display:none;" role="alert">
+              <div class="batch-alert__header">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <strong id="alertTitle">Validation Error</strong>
+              </div>
+              <ul class="batch-alert__list" id="alertErrorList"></ul>
+            </div>
+
+            <div class="upload-btn-wrap">
+              <button type="submit" class="btn-primary btn-block btn-lg" id="runBatchBtn" disabled>
+                <span class="btn-text">Run Batch Screening</span>
+                <span class="btn-spinner" style="display:none;">
+                  <svg class="spinner-icon" viewBox="0 0 50 50">
+                    <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="4"></circle>
+                  </svg>
+                  Processing records...
+                </span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Results Section ───────────────────────────────────────────────── -->
+    <div class="batch-results-section" id="resultsSection" style="display:none;">
+      
+      <!-- Section Header -->
+      <div class="results-top-bar">
+        <div>
+          <div class="results-tag">Batch Assessment Complete</div>
+          <h2 class="results-heading" id="resultsDatasetTitle">Dataset Analysis Results</h2>
+          <p class="results-sub" id="resultsDatasetSub">Evaluated using the GlucoScreen SVM clinical prediction model.</p>
+        </div>
+        <div class="results-actions">
+          <button type="button" class="btn-export btn-export--csv" id="exportCsvBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Export as CSV
+          </button>
+          <button type="button" class="btn-export btn-export--xlsx" id="exportXlsxBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Export as Excel (.xlsx)
+          </button>
+          <button type="button" class="btn-secondary btn-sm" id="newBatchBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M23 4v6h-6"/>
+              <path d="M1 20v-6h6"/>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+            Upload Another Dataset
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards -->
+      <div class="kpi-grid">
+        
+        <!-- Total -->
+        <div class="kpi-card">
+          <div class="kpi-card__label">Total Evaluated</div>
+          <div class="kpi-card__value" id="kpiTotal">0</div>
+          <div class="kpi-card__sub">Records processed</div>
+        </div>
+
+        <!-- High Risk -->
+        <div class="kpi-card kpi-card--high">
+          <div class="kpi-card__label">High Risk (&gt;60%)</div>
+          <div class="kpi-card__value" id="kpiHigh">0</div>
+          <div class="kpi-card__sub"><span id="kpiHighPct">0.0%</span> of cohort</div>
+        </div>
+
+        <!-- Moderate Risk -->
+        <div class="kpi-card kpi-card--mod">
+          <div class="kpi-card__label">Moderate Risk (30–60%)</div>
+          <div class="kpi-card__value" id="kpiMod">0</div>
+          <div class="kpi-card__sub"><span id="kpiModPct">0.0%</span> of cohort</div>
+        </div>
+
+        <!-- Low Risk -->
+        <div class="kpi-card kpi-card--low">
+          <div class="kpi-card__label">Low Risk (&lt;30%)</div>
+          <div class="kpi-card__value" id="kpiLow">0</div>
+          <div class="kpi-card__sub"><span id="kpiLowPct">0.0%</span> of cohort</div>
+        </div>
+
+        <!-- Average Risk -->
+        <div class="kpi-card">
+          <div class="kpi-card__label">Mean Risk Score</div>
+          <div class="kpi-card__value" id="kpiAvgScore">0.0%</div>
+          <div class="kpi-card__sub">Range: <span id="kpiScoreRange">0% – 0%</span></div>
+        </div>
+
+      </div>
+
+      <!-- Distribution Stacked Bar -->
+      <div class="risk-dist-card">
+        <div class="risk-dist-header">
+          <span class="risk-dist-title">Cohort Risk Distribution</span>
+          <div class="risk-dist-legend">
+            <span class="legend-item"><span class="legend-dot legend-dot--low"></span> Low (&lt;30%)</span>
+            <span class="legend-item"><span class="legend-dot legend-dot--mod"></span> Moderate (30–60%)</span>
+            <span class="legend-item"><span class="legend-dot legend-dot--high"></span> High (&gt;60%)</span>
+          </div>
+        </div>
+        <div class="stacked-bar-track" aria-hidden="true">
+          <div class="stacked-bar-segment stacked-bar-segment--low" id="distBarLow" style="width:0%"></div>
+          <div class="stacked-bar-segment stacked-bar-segment--mod" id="distBarMod" style="width:0%"></div>
+          <div class="stacked-bar-segment stacked-bar-segment--high" id="distBarHigh" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- Data Table Card -->
+      <div class="results-table-card">
+        
+        <!-- Controls Bar -->
+        <div class="table-controls">
+          
+          <div class="table-search-wrap">
+            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" id="tableSearchInput" class="table-search-input" placeholder="Search records by ID, BMI, etc..." />
+          </div>
+
+          <div class="filter-pills" role="radiogroup" aria-label="Risk Tier Filter">
+            <button type="button" class="filter-pill active" data-tier="all">All (<span id="countFilterAll">0</span>)</button>
+            <button type="button" class="filter-pill filter-pill--high" data-tier="high">High (<span id="countFilterHigh">0</span>)</button>
+            <button type="button" class="filter-pill filter-pill--mod" data-tier="mod">Moderate (<span id="countFilterMod">0</span>)</button>
+            <button type="button" class="filter-pill filter-pill--low" data-tier="low">Low (<span id="countFilterLow">0</span>)</button>
+          </div>
+
+        </div>
+
+        <!-- Scrollable Table -->
+        <div class="table-responsive results-table-scroll">
+          <table class="batch-data-table" id="batchDataTable">
+            <thead>
+              <tr>
+                <th style="width:70px;"># ID</th>
+                <th style="width:140px;">Risk Score</th>
+                <th style="width:150px;">Risk Category</th>
+                <th>Age Group</th>
+                <th>BMI</th>
+                <th>Gen Health</th>
+                <th>BP</th>
+                <th>Chol</th>
+                <th>Smoker</th>
+                <th>Physical Act.</th>
+                <th>Sex</th>
+                <th style="text-align:right;">Details</th>
+              </tr>
+            </thead>
+            <tbody id="batchTableBody">
+              <!-- Dynamically rendered -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Table Footer / Pagination -->
+        <div class="table-footer">
+          <div class="table-info" id="tablePaginationInfo">
+            Showing 1–10 of 50 records
+          </div>
+          <div class="pagination-controls">
+            <button type="button" class="btn-pagination" id="prevPageBtn" disabled>
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+              <span>Previous</span>
+            </button>
+            <span class="page-indicator" id="pageIndicator">Page 1 of 1</span>
+            <button type="button" class="btn-pagination" id="nextPageBtn" disabled>
+              <span>Next</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal for Detailed Row View -->
+<div class="batch-modal" id="rowDetailsModal" style="display:none;" aria-hidden="true" role="dialog" aria-labelledby="modalTitle">
+  <div class="batch-modal__backdrop" id="modalBackdrop"></div>
+  <div class="batch-modal__content">
+    <div class="batch-modal__header">
+      <div>
+        <h3 class="batch-modal__title" id="modalTitle">Record Details</h3>
+        <p class="batch-modal__sub" id="modalSub">Full CDC health indicator feature values</p>
+      </div>
+      <button type="button" class="batch-modal__close" id="modalCloseBtn" aria-label="Close modal">&times;</button>
+    </div>
+    <div class="batch-modal__body" id="modalBody">
+      <!-- Dynamically filled -->
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+  // ── State ────────────────────────────────────────────────────────────────
+  let currentBatchId = null;
+  let batchData = [];
+  let filteredData = [];
+  let activeTierFilter = 'all';
+  let searchQuery = '';
+  let currentPage = 1;
+  const pageSize = 15;
+
+  const featureLabels = {{ feature_labels | tojson }};
+
+  // ── DOM Elements ─────────────────────────────────────────────────────────
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('fileInput');
+  const dropzoneContent = document.getElementById('dropzoneContent');
+  const fileSelectedInfo = document.getElementById('fileSelectedInfo');
+  const selectedFileName = document.getElementById('selectedFileName');
+  const selectedFileSize = document.getElementById('selectedFileSize');
+  const removeFileBtn = document.getElementById('removeFileBtn');
+  const runBatchBtn = document.getElementById('runBatchBtn');
+  const batchUploadForm = document.getElementById('batchUploadForm');
+  const validationAlert = document.getElementById('validationAlert');
+  const alertErrorList = document.getElementById('alertErrorList');
+  const alertTitle = document.getElementById('alertTitle');
+
+  const uploadSection = document.getElementById('uploadSection');
+  const resultsSection = document.getElementById('resultsSection');
+  const resultsDatasetTitle = document.getElementById('resultsDatasetTitle');
+
+  // KPI Elements
+  const kpiTotal = document.getElementById('kpiTotal');
+  const kpiHigh = document.getElementById('kpiHigh');
+  const kpiHighPct = document.getElementById('kpiHighPct');
+  const kpiMod = document.getElementById('kpiMod');
+  const kpiModPct = document.getElementById('kpiModPct');
+  const kpiLow = document.getElementById('kpiLow');
+  const kpiLowPct = document.getElementById('kpiLowPct');
+  const kpiAvgScore = document.getElementById('kpiAvgScore');
+  const kpiScoreRange = document.getElementById('kpiScoreRange');
+
+  // Stacked Bar Elements
+  const distBarLow = document.getElementById('distBarLow');
+  const distBarMod = document.getElementById('distBarMod');
+  const distBarHigh = document.getElementById('distBarHigh');
+
+  // Table & Controls
+  const batchTableBody = document.getElementById('batchTableBody');
+  const tableSearchInput = document.getElementById('tableSearchInput');
+  const countFilterAll = document.getElementById('countFilterAll');
+  const countFilterHigh = document.getElementById('countFilterHigh');
+  const countFilterMod = document.getElementById('countFilterMod');
+  const countFilterLow = document.getElementById('countFilterLow');
+  const filterPills = document.querySelectorAll('.filter-pill');
+  const prevPageBtn = document.getElementById('prevPageBtn');
+  const nextPageBtn = document.getElementById('nextPageBtn');
+  const pageIndicator = document.getElementById('pageIndicator');
+  const tablePaginationInfo = document.getElementById('tablePaginationInfo');
+
+  // Actions
+  const exportCsvBtn = document.getElementById('exportCsvBtn');
+  const exportXlsxBtn = document.getElementById('exportXlsxBtn');
+  const newBatchBtn = document.getElementById('newBatchBtn');
+
+  // Modal
+  const rowDetailsModal = document.getElementById('rowDetailsModal');
+  const modalBackdrop = document.getElementById('modalBackdrop');
+  const modalCloseBtn = document.getElementById('modalCloseBtn');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalSub = document.getElementById('modalSub');
+  const modalBody = document.getElementById('modalBody');
+
+  // ── Helper Formatter ─────────────────────────────────────────────────────
+  function formatBytes(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  }
+
+  function getGenHlthText(val) {
+    const map = { 1: 'Excellent', 2: 'Very Good', 3: 'Good', 4: 'Fair', 5: 'Poor' };
+    return map[val] || val;
+  }
+
+  function getAgeGroupText(val) {
+    const map = {
+      1: '18–24', 2: '25–29', 3: '30–34', 4: '35–39', 5: '40–44',
+      6: '45–49', 7: '50–54', 8: '55–59', 9: '60–64', 10: '65–69',
+      11: '70–74', 12: '75–79', 13: '80+'
+    };
+    return map[val] || `Group ${val}`;
+  }
+
+  // ── File Selection & Drag-and-Drop ───────────────────────────────────────
+  function handleFileSelected(file) {
+    if (!file) return;
+
+    hideValidationErrors();
+    selectedFileName.textContent = file.name;
+    selectedFileSize.textContent = formatBytes(file.size);
+    dropzoneContent.style.display = 'none';
+    fileSelectedInfo.style.display = 'block';
+    runBatchBtn.disabled = false;
+  }
+
+  function clearSelectedFile() {
+    fileInput.value = '';
+    dropzoneContent.style.display = 'block';
+    fileSelectedInfo.style.display = 'none';
+    runBatchBtn.disabled = true;
+    hideValidationErrors();
+  }
+
+  fileInput.addEventListener('change', function (e) {
+    if (e.target.files && e.target.files.length > 0) {
+      handleFileSelected(e.target.files[0]);
+    }
+  });
+
+  removeFileBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    clearSelectedFile();
+  });
+
+  // Drag & drop visual events
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropzone.addEventListener(eventName, function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.add('dropzone--dragover');
+    }, false);
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropzone.addEventListener(eventName, function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.remove('dropzone--dragover');
+    }, false);
+  });
+
+  dropzone.addEventListener('drop', function (e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    if (files && files.length > 0) {
+      fileInput.files = files;
+      handleFileSelected(files[0]);
+    }
+  });
+
+  // Click on dropzone opens file dialog
+  dropzone.addEventListener('click', function (e) {
+    if (e.target !== removeFileBtn && !removeFileBtn.contains(e.target)) {
+      fileInput.click();
+    }
+  });
+
+  // ── Validation Errors Display ────────────────────────────────────────────
+  function showValidationErrors(errors, title = 'Validation Error') {
+    alertTitle.textContent = title;
+    alertErrorList.innerHTML = '';
+    errors.forEach(err => {
+      const li = document.createElement('li');
+      li.textContent = err;
+      alertErrorList.appendChild(li);
+    });
+    validationAlert.style.display = 'block';
+    validationAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function hideValidationErrors() {
+    validationAlert.style.display = 'none';
+    alertErrorList.innerHTML = '';
+  }
+
+  // ── Form Submission & Processing ─────────────────────────────────────────
+  batchUploadForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    if (!fileInput.files || fileInput.files.length === 0) return;
+
+    hideValidationErrors();
+
+    // UI Loading state
+    runBatchBtn.disabled = true;
+    runBatchBtn.querySelector('.btn-text').style.display = 'none';
+    runBatchBtn.querySelector('.btn-spinner').style.display = 'inline-flex';
+
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+
+    try {
+      const response = await fetch("{{ url_for('main.batch_predict') }}", {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        const errorList = data.errors || ['An unexpected error occurred while processing the file.'];
+        showValidationErrors(errorList, 'File Validation Failed');
+      } else {
+        // Success
+        currentBatchId = data.batch_id;
+        batchData = data.rows || [];
+        renderResults(data);
+      }
+    } catch (err) {
+      showValidationErrors([`Network or server error: ${err.message}`], 'Connection Error');
+    } finally {
+      runBatchBtn.disabled = false;
+      runBatchBtn.querySelector('.btn-text').style.display = 'inline';
+      runBatchBtn.querySelector('.btn-spinner').style.display = 'none';
+    }
+  });
+
+  // ── Render Results ───────────────────────────────────────────────────────
+  function renderResults(data) {
+    const summary = data.summary;
+    const filename = data.filename || 'Dataset';
+
+    resultsDatasetTitle.textContent = `Analysis: ${filename}`;
+    resultsDatasetSub.textContent = `Evaluated ${summary.total_records} records using GlucoScreen SVM Model`;
+
+    // Fill KPIs
+    kpiTotal.textContent = summary.total_records.toLocaleString();
+    kpiHigh.textContent = summary.high_risk_count.toLocaleString();
+    kpiHighPct.textContent = `${summary.high_risk_pct}%`;
+    kpiMod.textContent = summary.moderate_risk_count.toLocaleString();
+    kpiModPct.textContent = `${summary.moderate_risk_pct}%`;
+    kpiLow.textContent = summary.low_risk_count.toLocaleString();
+    kpiLowPct.textContent = `${summary.low_risk_pct}%`;
+    kpiAvgScore.textContent = `${summary.avg_risk_score_pct}%`;
+    kpiScoreRange.textContent = `${summary.min_risk_score_pct}% – ${summary.max_risk_score_pct}%`;
+
+    // Update Stacked Bar
+    distBarLow.style.width = `${summary.low_risk_pct}%`;
+    distBarMod.style.width = `${summary.moderate_risk_pct}%`;
+    distBarHigh.style.width = `${summary.high_risk_pct}%`;
+
+    // Update Filter Pill counts
+    countFilterAll.textContent = summary.total_records;
+    countFilterHigh.textContent = summary.high_risk_count;
+    countFilterMod.textContent = summary.moderate_risk_count;
+    countFilterLow.textContent = summary.low_risk_count;
+
+    // Switch view
+    uploadSection.style.display = 'none';
+    resultsSection.style.display = 'block';
+    resultsSection.scrollIntoView({ behavior: 'smooth' });
+
+    // Reset table state and render
+    activeTierFilter = 'all';
+    searchQuery = '';
+    tableSearchInput.value = '';
+    currentPage = 1;
+    updateFilterPillUI();
+    applyFilterAndRender();
+  }
+
+  // ── Filter & Search Logic ────────────────────────────────────────────────
+  function applyFilterAndRender() {
+    filteredData = batchData.filter(item => {
+      // Tier filter
+      if (activeTierFilter !== 'all' && item.risk_tier !== activeTierFilter) {
+        return false;
+      }
+      // Search query
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        const rowIdStr = String(item.row_id);
+        const scoreStr = String(item.risk_score_pct);
+        const levelStr = item.risk_level.toLowerCase();
+        const bmiStr = String(item.features.BMI || '');
+        const ageStr = String(item.features.Age || '');
+        return (
+          rowIdStr.includes(q) ||
+          scoreStr.includes(q) ||
+          levelStr.includes(q) ||
+          bmiStr.includes(q) ||
+          ageStr.includes(q)
+        );
+      }
+      return true;
+    });
+
+    currentPage = 1;
+    renderTablePage();
+  }
+
+  function renderTablePage() {
+    const totalItems = filteredData.length;
+    const totalPages = Math.ceil(totalItems / pageSize) || 1;
+
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+
+    const startIdx = (currentPage - 1) * pageSize;
+    const endIdx = Math.min(startIdx + pageSize, totalItems);
+    const pageItems = filteredData.slice(startIdx, endIdx);
+
+    batchTableBody.innerHTML = '';
+
+    if (pageItems.length === 0) {
+      const emptyRow = document.createElement('tr');
+      emptyRow.innerHTML = `
+        <td colspan="12" class="text-center py-5 text-muted">
+          No records match your filter / search criteria.
+        </td>
+      `;
+      batchTableBody.appendChild(emptyRow);
+    } else {
+      pageItems.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.className = `batch-table-row batch-table-row--${row.risk_tier}`;
+
+        const feat = row.features || {};
+
+        tr.innerHTML = `
+          <td><strong>#${row.row_id}</strong></td>
+          <td>
+            <div class="table-score-wrap">
+              <span class="table-score-val font-semibold">${row.risk_score_pct}%</span>
+              <div class="table-mini-bar-track">
+                <div class="table-mini-bar-fill table-mini-bar-fill--${row.risk_tier}" style="width:${row.risk_score_pct}%"></div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="table-badge table-badge--${row.risk_tier}">
+              <span class="badge-dot badge-dot--${row.risk_tier}"></span>
+              ${row.risk_level}
+            </span>
+          </td>
+          <td>${getAgeGroupText(feat.Age)}</td>
+          <td><strong>${feat.BMI ? feat.BMI : '—'}</strong></td>
+          <td>${getGenHlthText(feat.GenHlth)}</td>
+          <td>${feat.HighBP == 1 ? '<span class="pill-yes">Yes</span>' : '<span class="pill-no">No</span>'}</td>
+          <td>${feat.HighChol == 1 ? '<span class="pill-yes">Yes</span>' : '<span class="pill-no">No</span>'}</td>
+          <td>${feat.Smoker == 1 ? '<span class="pill-yes">Yes</span>' : '<span class="pill-no">No</span>'}</td>
+          <td>${feat.PhysActivity == 1 ? '<span class="pill-yes">Yes</span>' : '<span class="pill-no">No</span>'}</td>
+          <td>${feat.Sex == 1 ? 'Male' : 'Female'}</td>
+          <td style="text-align:right;">
+            <button type="button" class="btn-row-details" data-id="${row.row_id}" title="View all indicators">
+              View &rarr;
+            </button>
+          </td>
+        `;
+
+        // Click row / button opens details modal
+        tr.querySelector('.btn-row-details').addEventListener('click', () => openRowModal(row));
+        batchTableBody.appendChild(tr);
+      });
+    }
+
+    // Update Pagination UI
+    tablePaginationInfo.textContent = totalItems > 0
+      ? `Showing ${startIdx + 1}–${endIdx} of ${totalItems} records`
+      : `0 records found`;
+    pageIndicator.textContent = `Page ${currentPage} of ${totalPages}`;
+    prevPageBtn.disabled = currentPage <= 1;
+    nextPageBtn.disabled = currentPage >= totalPages;
+  }
+
+  // ── Pagination Click Events ──────────────────────────────────────────────
+  prevPageBtn.addEventListener('click', () => {
+    if (currentPage > 1) {
+      currentPage--;
+      renderTablePage();
+    }
+  });
+
+  nextPageBtn.addEventListener('click', () => {
+    const totalPages = Math.ceil(filteredData.length / pageSize) || 1;
+    if (currentPage < totalPages) {
+      currentPage++;
+      renderTablePage();
+    }
+  });
+
+  // ── Search & Filter Events ───────────────────────────────────────────────
+  tableSearchInput.addEventListener('input', e => {
+    searchQuery = e.target.value.trim();
+    applyFilterAndRender();
+  });
+
+  function updateFilterPillUI() {
+    filterPills.forEach(pill => {
+      if (pill.getAttribute('data-tier') === activeTierFilter) {
+        pill.classList.add('active');
+      } else {
+        pill.classList.remove('active');
+      }
+    });
+  }
+
+  filterPills.forEach(pill => {
+    pill.addEventListener('click', function () {
+      activeTierFilter = this.getAttribute('data-tier');
+      updateFilterPillUI();
+      applyFilterAndRender();
+    });
+  });
+
+  // ── Modal Details View ───────────────────────────────────────────────────
+  function openRowModal(row) {
+    modalTitle.textContent = `Record #${row.row_id} — Assessment Details`;
+    modalSub.textContent = `Predicted Risk: ${row.risk_score_pct}% (${row.risk_level})`;
+
+    const feat = row.features || {};
+
+    let gridHtml = `<div class="modal-feature-grid">`;
+    for (const [key, label] of Object.entries(featureLabels)) {
+      let val = feat[key];
+      let displayVal = val;
+
+      if (['HighBP', 'HighChol', 'CholCheck', 'Smoker', 'Stroke', 'HeartDiseaseorAttack', 'PhysActivity', 'Fruits', 'Veggies', 'HvyAlcoholConsump', 'AnyHealthcare', 'NoDocbcCost', 'DiffWalk'].includes(key)) {
+        displayVal = val == 1 ? '<span class="pill-yes">Yes (1)</span>' : '<span class="pill-no">No (0)</span>';
+      } else if (key === 'Sex') {
+        displayVal = val == 1 ? 'Male (1)' : 'Female (0)';
+      } else if (key === 'Age') {
+        displayVal = `${getAgeGroupText(val)} (Group ${val})`;
+      } else if (key === 'GenHlth') {
+        displayVal = `${getGenHlthText(val)} (Scale ${val})`;
+      } else if (['MentHlth', 'PhysHlth'].includes(key)) {
+        displayVal = `${val} days`;
+      }
+
+      gridHtml += `
+        <div class="modal-feature-item">
+          <div class="modal-feature-label">${label}</div>
+          <div class="modal-feature-val">${displayVal}</div>
+        </div>
+      `;
+    }
+    gridHtml += `</div>`;
+
+    modalBody.innerHTML = gridHtml;
+    rowDetailsModal.style.display = 'flex';
+    rowDetailsModal.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeRowModal() {
+    rowDetailsModal.style.display = 'none';
+    rowDetailsModal.setAttribute('aria-hidden', 'true');
+  }
+
+  modalCloseBtn.addEventListener('click', closeRowModal);
+  modalBackdrop.addEventListener('click', closeRowModal);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && rowDetailsModal.style.display === 'flex') {
+      closeRowModal();
+    }
+  });
+
+  // ── Export Results ───────────────────────────────────────────────────────
+  exportCsvBtn.addEventListener('click', () => {
+    if (!currentBatchId) return;
+    window.location.href = `{{ url_for('main.batch_export') }}?batch_id=${encodeURIComponent(currentBatchId)}&format=csv`;
+  });
+
+  exportXlsxBtn.addEventListener('click', () => {
+    if (!currentBatchId) return;
+    window.location.href = `{{ url_for('main.batch_export') }}?batch_id=${encodeURIComponent(currentBatchId)}&format=xlsx`;
+  });
+
+  // ── Run Another Batch ────────────────────────────────────────────────────
+  newBatchBtn.addEventListener('click', () => {
+    resultsSection.style.display = 'none';
+    uploadSection.style.display = 'grid';
+    clearSelectedFile();
+    uploadSection.scrollIntoView({ behavior: 'smooth' });
+  });
+
+})();
+</script>
+{% endblock %}
