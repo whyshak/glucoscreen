@@ -210,8 +210,6 @@ class RAGChatbot:
             self._rag_chain = None
             return
 
-        from langchain.chains import create_retrieval_chain
-        from langchain_classic.chains.combine_documents import create_stuff_documents_chain
         from langchain_core.prompts import ChatPromptTemplate
 
         prompt = ChatPromptTemplate.from_messages(
@@ -221,8 +219,25 @@ class RAGChatbot:
             ]
         )
 
-        question_answer_chain = create_stuff_documents_chain(self._llm, prompt)
-        self._rag_chain = create_retrieval_chain(self._retriever, question_answer_chain)
+        try:
+            # LangChain 1.x / classic chains
+            from langchain_classic.chains import create_retrieval_chain
+            from langchain_classic.chains.combine_documents import create_stuff_documents_chain
+
+            question_answer_chain = create_stuff_documents_chain(self._llm, prompt)
+            self._rag_chain = create_retrieval_chain(self._retriever, question_answer_chain)
+        except Exception:
+            try:
+                from langchain.chains import create_retrieval_chain
+                from langchain.chains.combine_documents import create_stuff_documents_chain
+
+                question_answer_chain = create_stuff_documents_chain(self._llm, prompt)
+                self._rag_chain = create_retrieval_chain(self._retriever, question_answer_chain)
+            except Exception as e:
+                logger.warning(f"Using LCEL fallback chain due to: {e}")
+                from langchain_core.output_parsers import StrOutputParser
+
+                self._rag_chain = prompt | self._llm | StrOutputParser()
 
     def _generate_suggestions(self, question: str, answer: str) -> List[str]:
         """Generate contextual follow-up prompt chips based on topic."""
@@ -287,8 +302,19 @@ class RAGChatbot:
         # Step 2: Generate response via LLM chain if available
         if self._rag_chain:
             try:
-                result = self._rag_chain.invoke({"input": question})
-                answer = result.get("answer", "")
+                context_text = "\n\n".join([d.page_content.strip() for d in retrieved_docs])
+                try:
+                    result = self._rag_chain.invoke({"input": question})
+                except Exception:
+                    result = self._rag_chain.invoke({"context": context_text, "input": question})
+
+                if isinstance(result, dict):
+                    answer = result.get("answer") or result.get("output_text") or str(result)
+                elif hasattr(result, "content"):
+                    answer = result.content
+                else:
+                    answer = str(result)
+
                 suggestions = self._generate_suggestions(question, answer)
                 return {
                     "text": answer,
@@ -297,7 +323,7 @@ class RAGChatbot:
                     "rag_ready": True,
                 }
             except Exception as exc:
-                logger.error(f"Error during RAG chain execution: {exc}")
+                logger.error(f"Error during RAG chain execution: {exc}", exc_info=True)
                 # Fallback to retrieved context summary
                 context_preview = (
                     "\n\n".join([f"• {d.page_content.strip()}" for d in retrieved_docs[:2]])
