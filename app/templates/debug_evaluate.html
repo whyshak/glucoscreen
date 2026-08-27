@@ -1,0 +1,890 @@
+{% extends "_base.html" %}
+
+{% block title %}Developer Debug Console — Test Dataset Evaluation | GlucoScreen{% endblock %}
+{% block description %}Developer-only evaluation and benchmarking tool for comparing ground truth labels with SVM model
+predictions.{% endblock %}
+
+{% block content %}
+<div class="eval-page">
+  <div class="container eval-container">
+
+    <!-- ── Developer Security Banner ────────────────────────────────────── -->
+    <div class="eval-dev-banner" role="status">
+      <div class="eval-dev-banner__badge">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+        <span>DEVELOPER MODE ONLY</span>
+      </div>
+      <div class="eval-dev-banner__text">
+        <strong>Localhost Debug Route</strong> — Unlinked endpoint for evaluating labeled test sets (X and y). Strictly
+        restricted from production.
+      </div>
+    </div>
+
+    <!-- ── Page Header ──────────────────────────────────────────────────── -->
+    <header class="eval-header">
+      <h1 class="eval-header__title">Test Dataset Evaluation &amp; Ground-Truth Benchmark</h1>
+      <p class="eval-header__subtitle">
+        Upload a labeled CSV or Excel test dataset containing both feature inputs (X) and ground-truth target labels (y)
+        to evaluate model performance, accuracy, precision, recall, confusion matrix, and row-by-row comparative
+        metrics.
+      </p>
+    </header>
+
+    <!-- ── Upload & Options Card ────────────────────────────────────────── -->
+    <section class="eval-card eval-upload-card" id="uploadSection" aria-label="Upload Labeled Test Dataset">
+      <div class="eval-card__header">
+        <div class="eval-card__icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 16 12 12 8 16"></polyline>
+            <line x1="12" y1="12" x2="12" y2="21"></line>
+            <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path>
+            <polyline points="16 16 12 12 8 16"></polyline>
+          </svg>
+        </div>
+        <div>
+          <h2 class="eval-card__title">Upload Labeled Test Dataset</h2>
+          <p class="eval-card__sub">Accepts CSV or Excel (.xlsx) files with 21 CDC health indicator features + target
+            column (e.g. <code>Diabetes_binary</code>, <code>Outcome</code>, or <code>Target</code>).</p>
+        </div>
+      </div>
+
+      <!-- Dropzone -->
+      <div class="eval-dropzone" id="evalDropzone" tabindex="0" role="button"
+        aria-label="Drop test dataset file here or click to browse">
+        <input type="file" id="evalFileInput" accept=".csv, .xlsx, .xls" class="eval-file-input" />
+        <div class="eval-dropzone__content" id="dropzonePrompt">
+          <div class="eval-dropzone__icon-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+          </div>
+          <p class="eval-dropzone__main-text">
+            <strong class="eval-dropzone__cta">Choose a test file</strong> or drag and drop here
+          </p>
+          <p class="eval-dropzone__sub-text">Supported formats: <strong>.CSV</strong> or <strong>.XLSX</strong> (Max
+            20,000 rows)</p>
+        </div>
+
+        <!-- Selected File State -->
+        <div class="eval-dropzone__file-selected" id="fileSelectedView" style="display: none;">
+          <div class="eval-selected-file">
+            <div class="eval-selected-file__icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+            </div>
+            <div class="eval-selected-file__info">
+              <span class="eval-selected-file__name" id="selectedFileName">filename.csv</span>
+              <span class="eval-selected-file__size" id="selectedFileSize">0 KB</span>
+            </div>
+            <button type="button" class="eval-btn-remove" id="btnRemoveFile" title="Remove file"
+              aria-label="Remove selected file">
+              &times;
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Errors / Alerts Container -->
+      <div id="evalAlertContainer" class="eval-alert-container" style="display: none;" role="alert"></div>
+
+      <!-- Action bar -->
+      <div class="eval-upload-actions">
+        <div class="eval-template-links">
+          <span class="eval-template-label">Sample Data:</span>
+          <a href="{{ url_for('main.debug_evaluate_template', format='csv', sample=1) }}" class="eval-template-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Sample Labeled CSV
+          </a>
+          <a href="{{ url_for('main.debug_evaluate_template', format='xlsx', sample=1) }}" class="eval-template-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Sample Labeled Excel
+          </a>
+        </div>
+
+        <button type="button" class="btn btn-primary eval-btn-run" id="btnRunEvaluation" disabled>
+          <svg class="eval-btn-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          <span id="btnRunText">Run Model Evaluation</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ── Evaluation Progress / Loading State ──────────────────────────── -->
+    <div class="eval-loading-state" id="evalLoadingState" style="display: none;">
+      <div class="eval-spinner"></div>
+      <h3 class="eval-loading-title">Evaluating Model Against Ground Truth...</h3>
+      <p class="eval-loading-sub">Parsing features, standardizing continuous columns, and executing SVM inference
+        pipeline.</p>
+    </div>
+
+    <!-- ── Evaluation Results Section ───────────────────────────────────── -->
+    <section class="eval-results-section" id="evalResultsSection" style="display: none;"
+      aria-label="Evaluation Results">
+
+      <!-- Metrics KPI Overview -->
+      <div class="eval-kpi-grid">
+        <div class="eval-kpi-card eval-kpi-card--primary">
+          <div class="eval-kpi-card__label">Overall Accuracy</div>
+          <div class="eval-kpi-card__value" id="kpiAccuracy">0.0%</div>
+          <div class="eval-kpi-card__sub" id="kpiAccuracySub">0 / 0 Matches</div>
+        </div>
+
+        <div class="eval-kpi-card">
+          <div class="eval-kpi-card__label">Precision (PPV)</div>
+          <div class="eval-kpi-card__value" id="kpiPrecision">0.0%</div>
+          <div class="eval-kpi-card__sub">TP / (TP + FP)</div>
+        </div>
+
+        <div class="eval-kpi-card">
+          <div class="eval-kpi-card__label">Recall (Sensitivity)</div>
+          <div class="eval-kpi-card__value" id="kpiRecall">0.0%</div>
+          <div class="eval-kpi-card__sub">TP / (TP + FN)</div>
+        </div>
+
+        <div class="eval-kpi-card">
+          <div class="eval-kpi-card__label">F1-Score</div>
+          <div class="eval-kpi-card__value" id="kpiF1">0.00</div>
+          <div class="eval-kpi-card__sub">Harmonic Mean</div>
+        </div>
+
+        <div class="eval-kpi-card">
+          <div class="eval-kpi-card__label">Specificity (TNR)</div>
+          <div class="eval-kpi-card__value" id="kpiSpecificity">0.0%</div>
+          <div class="eval-kpi-card__sub">TN / (TN + FP)</div>
+        </div>
+      </div>
+
+      <!-- Confusion Matrix & Summary Breakdown -->
+      <div class="eval-analysis-grid">
+        <!-- 2x2 Confusion Matrix -->
+        <div class="eval-card eval-cm-card">
+          <div class="eval-card__header">
+            <h2 class="eval-card__title">Confusion Matrix</h2>
+            <span class="eval-target-badge" id="detectedTargetBadge">Target: Diabetes_binary</span>
+          </div>
+
+          <div class="eval-cm-wrapper">
+            <div class="eval-cm-header-top">
+              <span>PREDICTED POSITIVE (1)</span>
+              <span>PREDICTED NEGATIVE (0)</span>
+            </div>
+            <div class="eval-cm-row">
+              <div class="eval-cm-label-left">ACTUAL 1 (POS)</div>
+              <div class="eval-cm-cell eval-cm-cell--tp" data-filter="TP" role="button"
+                title="Click to filter True Positives">
+                <span class="eval-cm-cell__tag">True Positive (TP)</span>
+                <span class="eval-cm-cell__count" id="cmTP">0</span>
+                <span class="eval-cm-cell__pct" id="cmTPPct">0.0%</span>
+              </div>
+              <div class="eval-cm-cell eval-cm-cell--fn" data-filter="FN" role="button"
+                title="Click to filter False Negatives (Type II Error)">
+                <span class="eval-cm-cell__tag">False Negative (FN)</span>
+                <span class="eval-cm-cell__count" id="cmFN">0</span>
+                <span class="eval-cm-cell__pct" id="cmFNPct">0.0%</span>
+              </div>
+            </div>
+            <div class="eval-cm-row">
+              <div class="eval-cm-label-left">ACTUAL 0 (NEG)</div>
+              <div class="eval-cm-cell eval-cm-cell--fp" data-filter="FP" role="button"
+                title="Click to filter False Positives (Type I Error)">
+                <span class="eval-cm-cell__tag">False Positive (FP)</span>
+                <span class="eval-cm-cell__count" id="cmFP">0</span>
+                <span class="eval-cm-cell__pct" id="cmFPPct">0.0%</span>
+              </div>
+              <div class="eval-cm-cell eval-cm-cell--tn" data-filter="TN" role="button"
+                title="Click to filter True Negatives">
+                <span class="eval-cm-cell__tag">True Negative (TN)</span>
+                <span class="eval-cm-cell__count" id="cmTN">0</span>
+                <span class="eval-cm-cell__pct" id="cmTNPct">0.0%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sample Breakdown Overview -->
+        <div class="eval-card eval-breakdown-card">
+          <div class="eval-card__header">
+            <h2 class="eval-card__title">Dataset &amp; Prediction Summary</h2>
+          </div>
+          <div class="eval-breakdown-list">
+            <div class="eval-breakdown-item">
+              <span class="eval-breakdown-label">Total Test Records</span>
+              <strong class="eval-breakdown-val" id="summaryTotal">0</strong>
+            </div>
+            <div class="eval-breakdown-item">
+              <span class="eval-breakdown-label">Correct Predictions (Matches)</span>
+              <strong class="eval-breakdown-val text-success" id="summaryMatches">0 (0.0%)</strong>
+            </div>
+            <div class="eval-breakdown-item">
+              <span class="eval-breakdown-label">Prediction Errors (Mismatches)</span>
+              <strong class="eval-breakdown-val text-danger" id="summaryMismatches">0 (0.0%)</strong>
+            </div>
+            <div class="eval-breakdown-item">
+              <span class="eval-breakdown-label">Ground Truth Class Balance</span>
+              <span class="eval-breakdown-val" id="summaryBalance">Pos: 0 | Neg: 0</span>
+            </div>
+            <div class="eval-breakdown-item">
+              <span class="eval-breakdown-label">Mean Predicted Risk Score</span>
+              <span class="eval-breakdown-val" id="summaryAvgRisk">0.0%</span>
+            </div>
+          </div>
+
+          <div class="eval-export-box">
+            <span class="eval-export-label">Export Full Comparison:</span>
+            <div class="eval-export-buttons">
+              <button type="button" class="eval-btn-export" id="btnExportCSV">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Export CSV
+              </button>
+              <button type="button" class="eval-btn-export" id="btnExportXLSX">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Export Excel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Comparative Results Table Card ────────────────────────────── -->
+      <div class="eval-card eval-table-card">
+        <div class="eval-table-toolbar">
+          <div class="eval-filters" role="group" aria-label="Filter Results">
+            <button type="button" class="eval-filter-pill active" data-filter="all">All (<span
+                id="filterCountAll">0</span>)</button>
+            <button type="button" class="eval-filter-pill eval-filter-pill--match" data-filter="match">Matches (<span
+                id="filterCountMatch">0</span>)</button>
+            <button type="button" class="eval-filter-pill eval-filter-pill--mismatch" data-filter="mismatch">Mismatches
+              (<span id="filterCountMismatch">0</span>)</button>
+            <button type="button" class="eval-filter-pill" data-filter="TP">TP (<span
+                id="filterCountTP">0</span>)</button>
+            <button type="button" class="eval-filter-pill" data-filter="TN">TN (<span
+                id="filterCountTN">0</span>)</button>
+            <button type="button" class="eval-filter-pill eval-filter-pill--fp" data-filter="FP">FP (<span
+                id="filterCountFP">0</span>)</button>
+            <button type="button" class="eval-filter-pill eval-filter-pill--fn" data-filter="FN">FN (<span
+                id="filterCountFN">0</span>)</button>
+          </div>
+
+          <div class="eval-search-wrap">
+            <input type="text" id="evalSearchInput" class="eval-search-input" placeholder="Search row # or values..."
+              aria-label="Search comparative records" />
+          </div>
+        </div>
+
+        <div class="eval-table-responsive">
+          <table class="eval-table" id="evalTable">
+            <thead>
+              <tr>
+                <th style="width: 60px;">#</th>
+                <th style="width: 140px;">Actual (y)</th>
+                <th style="width: 140px;">Predicted (ŷ)</th>
+                <th style="width: 170px;">Probability P(y=1)</th>
+                <th style="width: 130px;">Match Status</th>
+                <th style="width: 120px;">Category</th>
+                <th style="width: 100px;">Features</th>
+              </tr>
+            </thead>
+            <tbody id="evalTableBody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Table Pagination -->
+        <div class="eval-table-footer">
+          <div class="eval-pagination-info" id="evalPaginationInfo">
+            Showing 0 to 0 of 0 records
+          </div>
+          <div class="eval-pagination-controls">
+            <button type="button" class="btn-pagination" id="btnEvalPrev" disabled>&laquo; Prev</button>
+            <span class="page-indicator" id="evalPageIndicator">Page 1</span>
+            <button type="button" class="btn-pagination" id="btnEvalNext" disabled>Next &raquo;</button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+</div>
+
+<!-- ── Feature Inspection Modal ─────────────────────────────────────────── -->
+<div class="batch-modal" id="evalFeatureModal" style="display: none;" role="dialog" aria-modal="true"
+  aria-labelledby="modalRowTitle">
+  <div class="batch-modal__backdrop" id="modalBackdrop"></div>
+  <div class="batch-modal__content">
+    <div class="batch-modal__header">
+      <div>
+        <h3 class="batch-modal__title" id="modalRowTitle">Record #1 Details</h3>
+        <p class="batch-modal__sub" id="modalRowSub">Actual vs Predicted Comparison</p>
+      </div>
+      <button type="button" class="batch-modal__close" id="btnModalClose" aria-label="Close modal">&times;</button>
+    </div>
+    <div class="batch-modal__body">
+      <div class="modal-feature-grid" id="modalFeatureGrid">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // =============================================================================
+  // DEVELOPER EVALUATION CONSOLE CLIENT LOGIC
+  // =============================================================================
+
+  (function () {
+    'use strict';
+
+    // State
+    let currentFile = null;
+    let currentEvalId = null;
+    let allRows = [];
+    let filteredRows = [];
+    let currentFilter = 'all';
+    let searchQuery = '';
+    let currentPage = 1;
+    const pageSize = 20;
+
+    // DOM Elements
+    const evalDropzone = document.getElementById('evalDropzone');
+    const evalFileInput = document.getElementById('evalFileInput');
+    const dropzonePrompt = document.getElementById('dropzonePrompt');
+    const fileSelectedView = document.getElementById('fileSelectedView');
+    const selectedFileName = document.getElementById('selectedFileName');
+    const selectedFileSize = document.getElementById('selectedFileSize');
+    const btnRemoveFile = document.getElementById('btnRemoveFile');
+    const btnRunEvaluation = document.getElementById('btnRunEvaluation');
+    const btnRunText = document.getElementById('btnRunText');
+    const evalAlertContainer = document.getElementById('evalAlertContainer');
+    const evalLoadingState = document.getElementById('evalLoadingState');
+    const evalResultsSection = document.getElementById('evalResultsSection');
+    const evalTableBody = document.getElementById('evalTableBody');
+    const evalSearchInput = document.getElementById('evalSearchInput');
+    const filterPills = document.querySelectorAll('.eval-filter-pill');
+    const cmCells = document.querySelectorAll('.eval-cm-cell');
+    const btnEvalPrev = document.getElementById('btnEvalPrev');
+    const btnEvalNext = document.getElementById('btnEvalNext');
+    const evalPageIndicator = document.getElementById('evalPageIndicator');
+    const evalPaginationInfo = document.getElementById('evalPaginationInfo');
+    const btnExportCSV = document.getElementById('btnExportCSV');
+    const btnExportXLSX = document.getElementById('btnExportXLSX');
+    const evalFeatureModal = document.getElementById('evalFeatureModal');
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const btnModalClose = document.getElementById('btnModalClose');
+    const modalRowTitle = document.getElementById('modalRowTitle');
+    const modalRowSub = document.getElementById('modalRowSub');
+    const modalFeatureGrid = document.getElementById('modalFeatureGrid');
+
+    // Feature Labels Map
+    const FEATURE_LABELS = {
+      "HighBP": "High Blood Pressure",
+      "HighChol": "High Cholesterol",
+      "CholCheck": "Cholesterol Check (5 yrs)",
+      "BMI": "Body Mass Index (BMI)",
+      "Smoker": "Smoking History",
+      "Stroke": "Stroke History",
+      "HeartDiseaseorAttack": "Heart Disease / Attack",
+      "PhysActivity": "Physical Activity",
+      "Fruits": "Fruit Intake",
+      "Veggies": "Vegetable Intake",
+      "HvyAlcoholConsump": "Heavy Alcohol Consumption",
+      "AnyHealthcare": "Healthcare Coverage",
+      "NoDocbcCost": "Skipped Doctor Due to Cost",
+      "GenHlth": "General Health (1-5)",
+      "MentHlth": "Mental Health Days (0-30)",
+      "PhysHlth": "Physical Health Days (0-30)",
+      "DiffWalk": "Difficulty Walking",
+      "Sex": "Sex (0=F, 1=M)",
+      "Age": "Age Group (1-13)",
+      "Education": "Education Level (1-6)",
+      "Income": "Income Level (1-8)"
+    };
+
+    // ── Drag and Drop Handlers ────────────────────────────────────────────────
+    ['dragenter', 'dragover'].forEach(eventName => {
+      evalDropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        evalDropzone.classList.add('drag-active');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      evalDropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        evalDropzone.classList.remove('drag-active');
+      });
+    });
+
+    evalDropzone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      if (dt && dt.files && dt.files.length > 0) {
+        handleFileSelected(dt.files[0]);
+      }
+    });
+
+    evalDropzone.addEventListener('click', (e) => {
+      if (e.target.closest('#btnRemoveFile')) return;
+      evalFileInput.click();
+    });
+
+    evalFileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleFileSelected(e.target.files[0]);
+      }
+    });
+
+    btnRemoveFile.addEventListener('click', (e) => {
+      e.stopPropagation();
+      resetFileSelection();
+    });
+
+    function formatBytes(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    function handleFileSelected(file) {
+      const ext = file.name.split('.').pop().toLowerCase();
+      if (!['csv', 'xlsx', 'xls'].includes(ext)) {
+        showError(['Invalid file format. Please choose a .csv or .xlsx file.']);
+        return;
+      }
+
+      currentFile = file;
+      selectedFileName.textContent = file.name;
+      selectedFileSize.textContent = formatBytes(file.size);
+      dropzonePrompt.style.display = 'none';
+      fileSelectedView.style.display = 'flex';
+      btnRunEvaluation.disabled = false;
+      clearError();
+    }
+
+    function resetFileSelection() {
+      currentFile = null;
+      evalFileInput.value = '';
+      dropzonePrompt.style.display = 'block';
+      fileSelectedView.style.display = 'none';
+      btnRunEvaluation.disabled = true;
+    }
+
+    function showError(errors) {
+      evalAlertContainer.innerHTML = '';
+      const alertBox = document.createElement('div');
+      alertBox.className = 'eval-alert eval-alert--error';
+
+      let html = '<strong>Validation Error:</strong><ul style="margin: 0.5rem 0 0 1.2rem; padding: 0;">';
+      errors.forEach(err => {
+        html += `<li>${escapeHtml(err)}</li>`;
+      });
+      html += '</ul>';
+
+      alertBox.innerHTML = html;
+      evalAlertContainer.appendChild(alertBox);
+      evalAlertContainer.style.display = 'block';
+    }
+
+    function clearError() {
+      evalAlertContainer.innerHTML = '';
+      evalAlertContainer.style.display = 'none';
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // ── Run Evaluation Request ────────────────────────────────────────────────
+    btnRunEvaluation.addEventListener('click', async () => {
+      if (!currentFile) return;
+
+      clearError();
+      evalResultsSection.style.display = 'none';
+      evalLoadingState.style.display = 'flex';
+      btnRunEvaluation.disabled = true;
+      btnRunText.textContent = 'Evaluating...';
+
+      const formData = new FormData();
+      formData.append('file', currentFile);
+
+      try {
+        const response = await fetch("{{ url_for('main.debug_evaluate') }}", {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          showError(data.errors || ['An error occurred during dataset evaluation.']);
+          evalLoadingState.style.display = 'none';
+          btnRunEvaluation.disabled = false;
+          btnRunText.textContent = 'Run Model Evaluation';
+          return;
+        }
+
+        // Success
+        currentEvalId = data.eval_id;
+        allRows = data.rows || [];
+        renderEvaluationDashboard(data);
+        evalLoadingState.style.display = 'none';
+        evalResultsSection.style.display = 'block';
+        btnRunEvaluation.disabled = false;
+        btnRunText.textContent = 'Re-Run Evaluation';
+
+        // Smooth scroll to results
+        evalResultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      } catch (err) {
+        showError(['Network error or server unreachable: ' + err.message]);
+        evalLoadingState.style.display = 'none';
+        btnRunEvaluation.disabled = false;
+        btnRunText.textContent = 'Run Model Evaluation';
+      }
+    });
+
+    // ── Render Dashboard & Metrics ────────────────────────────────────────────
+    function renderEvaluationDashboard(data) {
+      const metrics = data.metrics;
+      const cm = metrics.confusion_matrix;
+
+      // KPI Cards
+      document.getElementById('kpiAccuracy').textContent = `${metrics.accuracy_pct}%`;
+      document.getElementById('kpiAccuracySub').textContent = `${metrics.matches} / ${metrics.total_records} Matches`;
+      document.getElementById('kpiPrecision').textContent = `${metrics.precision_pct}%`;
+      document.getElementById('kpiRecall').textContent = `${metrics.recall_pct}%`;
+      document.getElementById('kpiF1').textContent = `${metrics.f1_score}`;
+      document.getElementById('kpiSpecificity').textContent = `${metrics.specificity_pct}%`;
+
+      // Confusion Matrix
+      document.getElementById('detectedTargetBadge').textContent = `Target: ${data.target_column || 'Diabetes_binary'}`;
+      document.getElementById('cmTP').textContent = cm.tp;
+      document.getElementById('cmTPPct').textContent = `${cm.tp_pct}%`;
+      document.getElementById('cmFN').textContent = cm.fn;
+      document.getElementById('cmFNPct').textContent = `${cm.fn_pct}%`;
+      document.getElementById('cmFP').textContent = cm.fp;
+      document.getElementById('cmFPPct').textContent = `${cm.fp_pct}%`;
+      document.getElementById('cmTN').textContent = cm.tn;
+      document.getElementById('cmTNPct').textContent = `${cm.tn_pct}%`;
+
+      // Summary Breakdown
+      document.getElementById('summaryTotal').textContent = metrics.total_records;
+      document.getElementById('summaryMatches').textContent = `${metrics.matches} (${metrics.accuracy_pct}%)`;
+      const mismatchPct = (100 - metrics.accuracy_pct).toFixed(2);
+      document.getElementById('summaryMismatches').textContent = `${metrics.mismatches} (${mismatchPct}%)`;
+      document.getElementById('summaryBalance').textContent = `Pos (1): ${metrics.actual_positives} | Neg (0): ${metrics.actual_negatives}`;
+      document.getElementById('summaryAvgRisk').textContent = `${metrics.avg_risk_score_pct}%`;
+
+      // Filter pill count badges
+      document.getElementById('filterCountAll').textContent = metrics.total_records;
+      document.getElementById('filterCountMatch').textContent = metrics.matches;
+      document.getElementById('filterCountMismatch').textContent = metrics.mismatches;
+      document.getElementById('filterCountTP').textContent = cm.tp;
+      document.getElementById('filterCountTN').textContent = cm.tn;
+      document.getElementById('filterCountFP').textContent = cm.fp;
+      document.getElementById('filterCountFN').textContent = cm.fn;
+
+      // Reset filtering & page
+      currentFilter = 'all';
+      searchQuery = '';
+      currentPage = 1;
+      evalSearchInput.value = '';
+      updateActiveFilterPill('all');
+      applyFiltersAndRender();
+    }
+
+    function updateActiveFilterPill(filterKey) {
+      filterPills.forEach(pill => {
+        if (pill.dataset.filter === filterKey) {
+          pill.classList.add('active');
+        } else {
+          pill.classList.remove('active');
+        }
+      });
+    }
+
+    // Filter Pill Click Events
+    filterPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        currentFilter = pill.dataset.filter;
+        updateActiveFilterPill(currentFilter);
+        currentPage = 1;
+        applyFiltersAndRender();
+      });
+    });
+
+    // Confusion Matrix Cell Clicks (Filter by category)
+    cmCells.forEach(cell => {
+      cell.addEventListener('click', () => {
+        const filter = cell.dataset.filter;
+        currentFilter = filter;
+        updateActiveFilterPill(filter);
+        currentPage = 1;
+        applyFiltersAndRender();
+        document.querySelector('.eval-table-card').scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+
+    // Search Input Event
+    evalSearchInput.addEventListener('input', (e) => {
+      searchQuery = e.target.value.trim().toLowerCase();
+      currentPage = 1;
+      applyFiltersAndRender();
+    });
+
+    // ── Filter and Render Table ───────────────────────────────────────────────
+    function applyFiltersAndRender() {
+      filteredRows = allRows.filter(row => {
+        // 1. Category / Match Filter
+        if (currentFilter === 'match' && !row.is_match) return false;
+        if (currentFilter === 'mismatch' && row.is_match) return false;
+        if (['TP', 'TN', 'FP', 'FN'].includes(currentFilter) && row.outcome_type !== currentFilter) return false;
+
+        // 2. Search query filter
+        if (searchQuery) {
+          const idMatch = String(row.row_id).includes(searchQuery);
+          const actMatch = row.actual_label.toLowerCase().includes(searchQuery);
+          const predMatch = row.predicted_label.toLowerCase().includes(searchQuery);
+          const outcomeMatch = row.outcome_desc.toLowerCase().includes(searchQuery);
+          let featureMatch = false;
+          for (const [k, v] of Object.entries(row.features)) {
+            if (String(k).toLowerCase().includes(searchQuery) || String(v).toLowerCase().includes(searchQuery)) {
+              featureMatch = true;
+              break;
+            }
+          }
+          return idMatch || actMatch || predMatch || outcomeMatch || featureMatch;
+        }
+
+        return true;
+      });
+
+      renderTableRows();
+    }
+
+    function renderTableRows() {
+      evalTableBody.innerHTML = '';
+      const totalFiltered = filteredRows.length;
+
+      if (totalFiltered === 0) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="7" class="eval-empty-state">No matching records found.</td>`;
+        evalTableBody.appendChild(tr);
+        evalPaginationInfo.textContent = 'Showing 0 records';
+        evalPageIndicator.textContent = 'Page 1 of 1';
+        btnEvalPrev.disabled = true;
+        btnEvalNext.disabled = true;
+        return;
+      }
+
+      const totalPages = Math.ceil(totalFiltered / pageSize);
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+
+      const startIdx = (currentPage - 1) * pageSize;
+      const endIdx = Math.min(startIdx + pageSize, totalFiltered);
+      const pageRows = filteredRows.slice(startIdx, endIdx);
+
+      pageRows.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.className = row.is_match ? 'eval-row--match' : 'eval-row--mismatch';
+
+        // Actual Badge
+        const actualPill = row.actual_class === 1
+          ? '<span class="eval-pill eval-pill--pos">1 (Diabetes)</span>'
+          : '<span class="eval-pill eval-pill--neg">0 (No Diabetes)</span>';
+
+        // Predicted Badge
+        const predPill = row.predicted_class === 1
+          ? '<span class="eval-pill eval-pill--pos">1 (Diabetes)</span>'
+          : '<span class="eval-pill eval-pill--neg">0 (No Diabetes)</span>';
+
+        // Match Status Badge
+        const matchPill = row.is_match
+          ? '<span class="eval-status-badge eval-status-badge--match">MATCH</span>'
+          : '<span class="eval-status-badge eval-status-badge--mismatch">MISMATCH</span>';
+
+        // Outcome Type Badge
+        let outcomeClass = 'eval-cat--tn';
+        if (row.outcome_type === 'TP') outcomeClass = 'eval-cat--tp';
+        else if (row.outcome_type === 'FP') outcomeClass = 'eval-cat--fp';
+        else if (row.outcome_type === 'FN') outcomeClass = 'eval-cat--fn';
+
+        const outcomePill = `<span class="eval-cat-pill ${outcomeClass}">${row.outcome_type} (${row.outcome_desc})</span>`;
+
+        // Probability Bar
+        const probBar = `
+        <div class="eval-prob-wrap">
+          <span class="eval-prob-num">${row.probability_pct}%</span>
+          <div class="eval-prob-track">
+            <div class="eval-prob-fill ${row.risk_tier}" style="width: ${row.probability_pct}%;"></div>
+          </div>
+        </div>
+      `;
+
+        tr.innerHTML = `
+        <td class="eval-cell-id">#${row.row_id}</td>
+        <td>${actualPill}</td>
+        <td>${predPill}</td>
+        <td>${probBar}</td>
+        <td>${matchPill}</td>
+        <td>${outcomePill}</td>
+        <td>
+          <button type="button" class="eval-btn-inspect" data-row-id="${row.row_id}">
+            Inspect
+          </button>
+        </td>
+      `;
+
+        evalTableBody.appendChild(tr);
+      });
+
+      // Attach inspect buttons
+      evalTableBody.querySelectorAll('.eval-btn-inspect').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const rowId = parseInt(btn.dataset.rowId, 10);
+          openFeatureModal(rowId);
+        });
+      });
+
+      // Pagination Info & Buttons
+      evalPaginationInfo.textContent = `Showing ${startIdx + 1} to ${endIdx} of ${totalFiltered} records`;
+      evalPageIndicator.textContent = `Page ${currentPage} of ${totalPages}`;
+      btnEvalPrev.disabled = currentPage <= 1;
+      btnEvalNext.disabled = currentPage >= totalPages;
+    }
+
+    btnEvalPrev.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderTableRows();
+      }
+    });
+
+    btnEvalNext.addEventListener('click', () => {
+      const totalPages = Math.ceil(filteredRows.length / pageSize);
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderTableRows();
+      }
+    });
+
+    // ── Inspect Modal ─────────────────────────────────────────────────────────
+    function openFeatureModal(rowId) {
+      const row = allRows.find(r => r.row_id === rowId);
+      if (!row) return;
+
+      modalRowTitle.textContent = `Record #${row.row_id} Comparison & Features`;
+      modalRowSub.textContent = `Actual: ${row.actual_label} | Predicted: ${row.predicted_label} (${row.probability_pct}% Risk)`;
+
+      modalFeatureGrid.innerHTML = '';
+
+      // Summary item first
+      const summaryCard = document.createElement('div');
+      summaryCard.className = 'modal-feature-item modal-feature-item--highlight';
+      summaryCard.style.gridColumn = '1 / -1';
+      summaryCard.innerHTML = `
+      <div class="modal-feature-label">Evaluation Classification</div>
+      <div class="modal-feature-val" style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.25rem;">
+        <span class="eval-cat-pill eval-cat--${row.outcome_type.toLowerCase()}">${row.outcome_type} — ${row.outcome_desc}</span>
+        <span class="eval-status-badge eval-status-badge--${row.is_match ? 'match' : 'mismatch'}">${row.is_match ? 'CORRECT CLASSIFICATION' : 'PREDICTION MISMATCH'}</span>
+      </div>
+    `;
+      modalFeatureGrid.appendChild(summaryCard);
+
+      // Render all 21 features
+      for (const [featureKey, featureVal] of Object.entries(row.features)) {
+        const label = FEATURE_LABELS[featureKey] || featureKey;
+        let displayVal = featureVal;
+
+        if (['HighBP', 'HighChol', 'CholCheck', 'Smoker', 'Stroke', 'HeartDiseaseorAttack', 'PhysActivity', 'Fruits', 'Veggies', 'HvyAlcoholConsump', 'AnyHealthcare', 'NoDocbcCost', 'DiffWalk'].includes(featureKey)) {
+          displayVal = (featureVal === 1 || featureVal === '1') ? 'Yes (1)' : 'No (0)';
+        } else if (featureKey === 'Sex') {
+          displayVal = (featureVal === 1 || featureVal === '1') ? 'Male (1)' : 'Female (0)';
+        }
+
+        const item = document.createElement('div');
+        item.className = 'modal-feature-item';
+        item.innerHTML = `
+        <div class="modal-feature-label">${escapeHtml(label)}</div>
+        <div class="modal-feature-val">${escapeHtml(String(displayVal))}</div>
+      `;
+        modalFeatureGrid.appendChild(item);
+      }
+
+      evalFeatureModal.style.display = 'flex';
+    }
+
+    function closeModal() {
+      evalFeatureModal.style.display = 'none';
+    }
+
+    btnModalClose.addEventListener('click', closeModal);
+    modalBackdrop.addEventListener('click', closeModal);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && evalFeatureModal.style.display === 'flex') {
+        closeModal();
+      }
+    });
+
+    // ── Export Results Handlers ───────────────────────────────────────────────
+    btnExportCSV.addEventListener('click', () => {
+      if (!currentEvalId) return;
+      window.location.href = `{{ url_for('main.debug_evaluate_export') }}?eval_id=${currentEvalId}&format=csv`;
+    });
+
+    btnExportXLSX.addEventListener('click', () => {
+      if (!currentEvalId) return;
+      window.location.href = `{{ url_for('main.debug_evaluate_export') }}?eval_id=${currentEvalId}&format=xlsx`;
+    });
+
+  })();
+</script>
+{% endblock %}

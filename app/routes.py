@@ -12,14 +12,38 @@ import os
 import threading
 import uuid
 
+import io
+
 from flask import (
     Blueprint,
+    abort,
+    current_app,
     jsonify,
     redirect,
     render_template,
     request,
+    send_file,
     session,
     url_for,
+)
+from app.batch_service import (
+    FEATURE_COLUMNS,
+    FEATURE_LABELS,
+    export_results,
+    generate_template,
+    parse_and_validate_file,
+    run_batch_prediction,
+)
+from app.evaluation_service import (
+    export_evaluation_results,
+    generate_labeled_template,
+    parse_and_validate_labeled_file,
+    run_model_evaluation,
+)
+from app.rag_service import (
+    QUICK_PROMPTS,
+    WELCOME_MESSAGE,
+    rag_bot,
 )
 
 main = Blueprint("main", __name__)
@@ -659,3 +683,384 @@ def result():
         explanation=explanation,
         job_id=job_id,
     )
+
+
+# =============================================================================
+# BATCH PREDICTION ROUTES
+# =============================================================================
+
+# In-memory storage for processed batch prediction results
+_batch_cache: dict[str, dict] = {}
+
+
+@main.route("/batch")
+def batch():
+    """Render the Batch CSV / Excel Screening page."""
+    return render_template(
+        "batch.html",
+        columns=FEATURE_COLUMNS,
+        feature_labels=FEATURE_LABELS,
+    )
+
+
+@main.route("/batch/template")
+def batch_template():
+    """
+    Download a pre-formatted template (blank or sample) in CSV or Excel format.
+
+    Query parameters:
+        format (str): 'csv' (default) or 'xlsx' / 'excel'
+        sample (bool/str): '1', 'true', or 'yes' to include sample data rows
+    """
+    file_format = request.args.get("format", "csv").strip().lower()
+    sample_param = request.args.get("sample", "0").strip().lower()
+    include_sample = sample_param in {"1", "true", "yes"}
+
+    file_bytes, mimetype, filename = generate_template(
+        file_format=file_format, sample=include_sample
+    )
+
+    return send_file(
+        io.BytesIO(file_bytes),
+        mimetype=mimetype,
+        as_attachment=True,
+        download_name=filename,
+    )
+
+
+@main.route("/batch/predict", methods=["POST"])
+def batch_predict():
+    """
+    Process an uploaded CSV or Excel file, validate all rows, run batch
+    predictions using the SVM model & scaler, and return results JSON.
+    """
+    if "file" not in request.files:
+        return jsonify({
+            "success": False,
+            "errors": ["No file was uploaded. Please choose a CSV or Excel file."],
+        }), 400
+
+    file = request.files["file"]
+    if not file or file.filename == "":
+        return jsonify({
+            "success": False,
+            "errors": ["No file selected. Please select a valid file to upload."],
+        }), 400
+
+    filename = file.filename or "upload.csv"
+    try:
+        file_bytes = file.read()
+    except Exception as exc:
+        return jsonify({
+            "success": False,
+            "errors": [f"Error reading uploaded file: {str(exc)}"],
+        }), 400
+
+    # 1. Parse and validate file content
+    df_cleaned, errors, warnings = parse_and_validate_file(file_bytes, filename)
+    if errors:
+        return jsonify({
+            "success": False,
+            "errors": errors,
+            "warnings": warnings,
+        }), 400
+
+    # 2. Run vectorized prediction pipeline
+    try:
+        results = run_batch_prediction(df_cleaned, model, scaler)
+    except Exception as exc:
+        return jsonify({
+            "success": False,
+            "errors": [f"Prediction error: {str(exc)}"],
+        }), 500
+
+    # 3. Cache results for export download
+    batch_id = str(uuid.uuid4())
+    # Keep cache from growing unbounded
+    if len(_batch_cache) > 50:
+        oldest_key = next(iter(_batch_cache))
+        _batch_cache.pop(oldest_key, None)
+
+    _batch_cache[batch_id] = results
+
+    return jsonify({
+        "success": True,
+        "batch_id": batch_id,
+        "filename": filename,
+        "summary": results["summary"],
+        "rows": results["rows"],
+        "columns": FEATURE_COLUMNS,
+        "feature_labels": FEATURE_LABELS,
+        "warnings": warnings,
+    })
+
+
+@main.route("/batch/export", methods=["GET", "POST"])
+def batch_export():
+    """
+    Export processed batch results to CSV or Excel.
+
+    Accepts batch_id and format ('csv' or 'xlsx') via query parameters or JSON.
+    """
+    if request.method == "POST" and request.is_json:
+        data = request.get_json(silent=True) or {}
+        batch_id = data.get("batch_id")
+        file_format = data.get("format", "csv")
+    else:
+        batch_id = request.args.get("batch_id")
+        file_format = request.args.get("format", "csv")
+
+    if not batch_id or batch_id not in _batch_cache:
+        return jsonify({
+            "error": "Batch session not found or has expired. Please run the batch screening again.",
+        }), 404
+
+    results = _batch_cache[batch_id]
+    file_bytes, mimetype, filename = export_results(results, file_format=file_format)
+
+    return send_file(
+        io.BytesIO(file_bytes),
+        mimetype=mimetype,
+        as_attachment=True,
+        download_name=filename,
+    )
+
+
+# =============================================================================
+# DEVELOPER-ONLY EVALUATION & BENCHMARKING ROUTES (HIDDEN / LOCALHOST ONLY)
+# =============================================================================
+
+# In-memory storage for processed developer evaluation sessions
+_eval_cache: dict[str, dict] = {}
+
+
+def _is_local_request() -> bool:
+    """Check if the incoming request is originating from localhost / loopback."""
+    remote_addr = (request.remote_addr or "").strip()
+    return remote_addr in {"127.0.0.1", "::1", "localhost"}
+
+
+def _is_debug_mode() -> bool:
+    """Check if the Flask app is running in debug mode or testing mode."""
+    return bool(
+        current_app.debug
+        or current_app.config.get("DEBUG", False)
+        or current_app.config.get("TESTING", False)
+    )
+
+
+def _check_debug_access() -> None:
+    """
+    Strict developer-only access guard.
+    Ensures route is only accessible when running in debug/testing mode from localhost.
+    Aborts with 404 Not Found otherwise so route is completely invisible and non-functional in production.
+    """
+    if not (_is_debug_mode() and _is_local_request()):
+        abort(404)
+
+
+@main.route("/debug/evaluate", methods=["GET", "POST"])
+def debug_evaluate():
+    """
+    Developer-only route for evaluating a labeled test dataset against the SVM model.
+
+    - GET: Renders the evaluation dashboard.
+    - POST: Processes an uploaded test dataset (CSV/XLSX with X and y), runs predictions,
+      computes classification metrics (Accuracy, Precision, Recall, Specificity, F1, Confusion Matrix),
+      and returns row-by-row comparisons.
+    """
+    _check_debug_access()
+
+    if request.method == "GET":
+        return render_template(
+            "debug_evaluate.html",
+            columns=FEATURE_COLUMNS,
+            feature_labels=FEATURE_LABELS,
+        )
+
+    # POST Handling: Process labeled test file
+    if "file" not in request.files:
+        return jsonify({
+            "success": False,
+            "errors": ["No file was uploaded. Please upload a labeled CSV or Excel test dataset."],
+        }), 400
+
+    file = request.files["file"]
+    if not file or file.filename == "":
+        return jsonify({
+            "success": False,
+            "errors": ["No file selected. Please select a valid test dataset to evaluate."],
+        }), 400
+
+    filename = file.filename or "test_dataset.csv"
+    try:
+        file_bytes = file.read()
+    except Exception as exc:
+        return jsonify({
+            "success": False,
+            "errors": [f"Error reading uploaded file: {str(exc)}"],
+        }), 400
+
+    # 1. Parse and validate features (X) and ground truth target (y)
+    df_cleaned, y_actual, target_col, errors, warnings = parse_and_validate_labeled_file(file_bytes, filename)
+    if errors:
+        return jsonify({
+            "success": False,
+            "errors": errors,
+            "warnings": warnings,
+        }), 400
+
+    # 2. Run evaluation pipeline
+    try:
+        eval_results = run_model_evaluation(df_cleaned, y_actual, model, scaler)
+    except Exception as exc:
+        return jsonify({
+            "success": False,
+            "errors": [f"Evaluation error: {str(exc)}"],
+        }), 500
+
+    # 3. Cache results for export
+    eval_id = str(uuid.uuid4())
+    if len(_eval_cache) > 50:
+        oldest_key = next(iter(_eval_cache))
+        _eval_cache.pop(oldest_key, None)
+
+    _eval_cache[eval_id] = eval_results
+
+    return jsonify({
+        "success": True,
+        "eval_id": eval_id,
+        "filename": filename,
+        "target_column": target_col,
+        "metrics": eval_results["metrics"],
+        "rows": eval_results["rows"],
+        "columns": FEATURE_COLUMNS,
+        "feature_labels": FEATURE_LABELS,
+        "warnings": warnings,
+    })
+
+
+@main.route("/debug/evaluate/template", methods=["GET"])
+def debug_evaluate_template():
+    """
+    Download a sample or blank labeled test template (CSV/Excel) containing
+    both the 21 health indicator feature columns and the ground-truth target column.
+    """
+    _check_debug_access()
+
+    file_format = request.args.get("format", "csv").strip().lower()
+    sample_param = request.args.get("sample", "1").strip().lower()
+    include_sample = sample_param in {"1", "true", "yes"}
+
+    file_bytes, mimetype, filename = generate_labeled_template(
+        file_format=file_format, sample=include_sample
+    )
+
+    return send_file(
+        io.BytesIO(file_bytes),
+        mimetype=mimetype,
+        as_attachment=True,
+        download_name=filename,
+    )
+
+
+@main.route("/debug/evaluate/export", methods=["GET", "POST"])
+def debug_evaluate_export():
+    """
+    Export the complete comparative evaluation results (Actual vs. Predicted,
+    Probability scores, Match/Mismatch flags, Error categorizations, and features) to CSV or Excel.
+    """
+    _check_debug_access()
+
+    if request.method == "POST" and request.is_json:
+        data = request.get_json(silent=True) or {}
+        eval_id = data.get("eval_id")
+        file_format = data.get("format", "csv")
+    else:
+        eval_id = request.args.get("eval_id")
+        file_format = request.args.get("format", "csv")
+
+    if not eval_id or eval_id not in _eval_cache:
+        return jsonify({
+            "error": "Evaluation session not found or has expired. Please run the evaluation again.",
+        }), 404
+
+    results = _eval_cache[eval_id]
+    file_bytes, mimetype, filename = export_evaluation_results(results, file_format=file_format)
+
+    return send_file(
+        io.BytesIO(file_bytes),
+        mimetype=mimetype,
+        as_attachment=True,
+        download_name=filename,
+    )
+
+
+# =============================================================================
+# DIA CHATBOT & RAG PIPELINE PLACEHOLDER ROUTES
+# =============================================================================
+
+@main.route("/chat", methods=["GET"])
+def chat():
+    """
+    Render the dedicated full-page Dia Diabetes Assistant chat interface.
+    """
+    return render_template(
+        "chat.html",
+        quick_prompts=QUICK_PROMPTS,
+        welcome_message=WELCOME_MESSAGE,
+    )
+
+
+@main.route("/api/chat", methods=["POST"])
+def api_chat():
+    """
+    API endpoint to handle incoming conversational user messages from the Dia chat interface.
+    Forwards messages to the live RAG retrieval & LLM pipeline.
+
+    Request JSON payload:
+        {
+            "message": str,                # User prompt / inquiry
+            "history": list[dict] | None   # Optional conversation history
+        }
+
+    Response JSON:
+        {
+            "text": str,                   # Synthesized response or educational guidance
+            "suggestions": list[str],      # Recommended follow-up question chips
+            "sources": list[str],          # Referenced document titles/URLs
+            "rag_ready": bool              # Live RAG status flag
+        }
+    """
+    if not request.is_json:
+        return jsonify({"error": "Request body must be JSON."}), 400
+
+    data = request.get_json(silent=True) or {}
+    user_message = (data.get("message") or "").strip()
+    history = data.get("history", [])
+
+    if not user_message:
+        return jsonify({"error": "Please provide a valid message."}), 400
+
+    if len(user_message) > 1000:
+        return jsonify({
+            "error": "Message is too long. Please keep your message under 1,000 characters."
+        }), 400
+
+    try:
+        response_data = rag_bot.ask(user_message, history=history)
+        return jsonify(response_data), 200
+    except Exception as exc:
+        current_app.logger.error(f"Error processing RAG chat request: {exc}", exc_info=True)
+        return jsonify({
+            "text": (
+                "An error occurred while processing your request with the medical knowledge assistant. "
+                "Please try again in a moment."
+            ),
+            "suggestions": QUICK_PROMPTS[:3],
+            "sources": [],
+            "rag_ready": False,
+        }), 500
+
+
+
