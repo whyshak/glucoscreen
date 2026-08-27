@@ -40,6 +40,11 @@ from app.evaluation_service import (
     parse_and_validate_labeled_file,
     run_model_evaluation,
 )
+from app.rag_service import (
+    QUICK_PROMPTS,
+    WELCOME_MESSAGE,
+    rag_bot,
+)
 
 main = Blueprint("main", __name__)
 
@@ -989,4 +994,73 @@ def debug_evaluate_export():
         as_attachment=True,
         download_name=filename,
     )
+
+
+# =============================================================================
+# DIA CHATBOT & RAG PIPELINE PLACEHOLDER ROUTES
+# =============================================================================
+
+@main.route("/chat", methods=["GET"])
+def chat():
+    """
+    Render the dedicated full-page Dia Diabetes Assistant chat interface.
+    """
+    return render_template(
+        "chat.html",
+        quick_prompts=QUICK_PROMPTS,
+        welcome_message=WELCOME_MESSAGE,
+    )
+
+
+@main.route("/api/chat", methods=["POST"])
+def api_chat():
+    """
+    API endpoint to handle incoming conversational user messages from the Dia chat interface.
+    Forwards messages to the live RAG retrieval & LLM pipeline.
+
+    Request JSON payload:
+        {
+            "message": str,                # User prompt / inquiry
+            "history": list[dict] | None   # Optional conversation history
+        }
+
+    Response JSON:
+        {
+            "text": str,                   # Synthesized response or educational guidance
+            "suggestions": list[str],      # Recommended follow-up question chips
+            "sources": list[str],          # Referenced document titles/URLs
+            "rag_ready": bool              # Live RAG status flag
+        }
+    """
+    if not request.is_json:
+        return jsonify({"error": "Request body must be JSON."}), 400
+
+    data = request.get_json(silent=True) or {}
+    user_message = (data.get("message") or "").strip()
+    history = data.get("history", [])
+
+    if not user_message:
+        return jsonify({"error": "Please provide a valid message."}), 400
+
+    if len(user_message) > 1000:
+        return jsonify({
+            "error": "Message is too long. Please keep your message under 1,000 characters."
+        }), 400
+
+    try:
+        response_data = rag_bot.ask(user_message, history=history)
+        return jsonify(response_data), 200
+    except Exception as exc:
+        current_app.logger.error(f"Error processing RAG chat request: {exc}", exc_info=True)
+        return jsonify({
+            "text": (
+                "An error occurred while processing your request with the medical knowledge assistant. "
+                "Please try again in a moment."
+            ),
+            "suggestions": QUICK_PROMPTS[:3],
+            "sources": [],
+            "rag_ready": False,
+        }), 500
+
+
 

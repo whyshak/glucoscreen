@@ -1,0 +1,83 @@
+{% extends "_base.html" %}
+
+{% block title %}Dia Diabetes Assistant — GlucoScreen{% endblock %}
+{% block description %}Chat with Dia, your AI health assistant for diabetes risk factors, diet guidance, symptoms, and lifestyle tips.{% endblock %}
+
+{% block content %}
+<div class="dia-fullpage-wrapper">
+  <div class="dia-fullpage-backdrop" aria-hidden="true"></div>
+  
+  <div class="container dia-fullpage-container">
+    
+    <!-- Full-page Chat Panel Card -->
+    <div class="dia-fullpage-panel" id="dia-fullpage-chat">
+
+      <!-- Header -->
+      <div class="dia-panel-header">
+        <div class="dia-panel-header__left">
+          <div class="dia-avatar dia-avatar--lg">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="dia-panel-header__title">Dia · Diabetes Assistant</h1>
+            <p class="dia-panel-header__status">
+              <span class="dia-status-dot" aria-hidden="true"></span>
+              Online — ready to help
+            </p>
+          </div>
+        </div>
+
+        <div class="dia-panel-header__right">
+          <button type="button" id="dia-fullpage-clear" class="btn-ghost-sm" title="Reset Conversation">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+            <span>Clear Chat</span>
+          </button>
+          <a href="{{ url_for('main.screening') }}" class="btn-brand-subtle-sm">
+            <span>Take Screening</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Messages Scroll Body -->
+      <div id="dia-fullpage-messages" class="dia-fullpage-messages-body" tabindex="0" role="log" aria-live="polite">
+        <!-- Dynamic message history rendered by chat.js -->
+      </div>
+
+      <!-- Quick Prompts Chips Row -->
+      <div class="dia-fullpage-quick-prompts-wrapper">
+        <div id="dia-fullpage-quick-prompts" class="dia-quick-prompts no-scrollbar">
+          <!-- Dynamic Quick Prompt Buttons -->
+        </div>
+      </div>
+
+      <!-- Input Bar -->
+      <form id="dia-fullpage-form" class="dia-chat-input-container dia-fullpage-input-container">
+        <textarea
+          id="dia-fullpage-input"
+          rows="1"
+          placeholder="Ask Dia anything about diabetes, diet or exercise…"
+          aria-label="Your message to Dia"
+          maxlength="1000"
+        ></textarea>
+        <button type="submit" id="dia-fullpage-send" class="dia-chat-send-btn" aria-label="Send message" disabled>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </form>
+
+      <div class="dia-disclaimer-footer">
+        <span>Dia provides general info, not medical advice. Press Enter to send.</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
