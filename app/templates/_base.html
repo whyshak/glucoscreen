@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}GlucoScreen — Free Diabetes Risk Prescreening{% endblock %}</title>
-  <meta name="description" content="{% block description %}A quick, science-based questionnaire estimates your diabetes risk in minutes. Powered by CDC health indicators.{% endblock %}">
+  <meta name="description"
+    content="{% block description %}A quick, science-based questionnaire estimates your diabetes risk in minutes. Powered by CDC health indicators.{% endblock %}">
 
   <!-- Preconnect for fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,6 +17,7 @@
 
   {% block extra_head %}{% endblock %}
 </head>
+
 <body>
 
   <!-- ── Navbar ─────────────────────────────────────────────────────────── -->
@@ -23,34 +26,45 @@
       <a href="{{ url_for('main.index') }}" class="navbar__logo" aria-label="GlucoScreen Home">
         <div class="navbar__logo-icon" aria-hidden="true">
           <!-- Drop / glucose icon -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-               fill="currentColor" aria-hidden="true">
-            <path d="M12 2C6.5 7.2 4 10.9 4 14a8 8 0 0016 0c0-3.1-2.5-6.8-8-12z"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"
+            aria-hidden="true">
+            <path d="M12 2C6.5 7.2 4 10.9 4 14a8 8 0 0016 0c0-3.1-2.5-6.8-8-12z" />
           </svg>
         </div>
         GlucoScreen
       </a>
 
-      <nav class="navbar__nav" aria-label="Main navigation">
+      <button type="button" class="navbar__mobile-toggle" id="navMobileToggle" aria-label="Toggle navigation menu"
+        aria-expanded="false" aria-controls="mainNav">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+
+      <nav class="navbar__nav" id="mainNav" aria-label="Main navigation">
         <a href="{{ url_for('main.index') }}" class="navbar__link">Home</a>
         <a href="{{ url_for('main.index') }}#how-it-works" class="navbar__link">How it works</a>
         <a href="{{ url_for('main.index') }}#features" class="navbar__link">Features</a>
         <a href="{{ url_for('main.index') }}#model-reliability" class="navbar__link">Accuracy &amp; Reliability</a>
         <a href="{{ url_for('main.chat') }}" class="navbar__link navbar__link--assistant">
           <span class="navbar__link-spark" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/>
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8" />
             </svg>
           </span>
           Dia Assistant
         </a>
-        
+
         <!-- Grouped Screening Dropdown -->
         <div class="navbar__dropdown" id="screeningDropdown">
-          <button type="button" class="navbar__cta navbar__dropdown-toggle" id="nav-cta-btn" aria-expanded="false" aria-haspopup="true">
+          <button type="button" class="navbar__cta navbar__dropdown-toggle" id="nav-cta-btn" aria-expanded="false"
+            aria-haspopup="true">
             <span>Start Screening</span>
-            <svg class="dropdown-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <svg class="dropdown-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+              aria-hidden="true">
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </button>
@@ -58,9 +72,9 @@
             <a href="{{ url_for('main.screening') }}" class="dropdown-item" role="menuitem">
               <div class="dropdown-item__icon dropdown-item__icon--single">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-                  <circle cx="12" cy="7" r="4"/>
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
                 </svg>
               </div>
               <div class="dropdown-item__text">
@@ -71,11 +85,11 @@
             <a href="{{ url_for('main.batch') }}" class="dropdown-item" role="menuitem">
               <div class="dropdown-item__icon dropdown-item__icon--batch">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                  <polyline points="14 2 14 8 20 8"/>
-                  <line x1="16" y1="13" x2="8" y2="13"/>
-                  <line x1="16" y1="17" x2="8" y2="17"/>
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
                 </svg>
               </div>
               <div class="dropdown-item__text">
@@ -97,7 +111,7 @@
   <!-- ── Footer ─────────────────────────────────────────────────────────── -->
   <footer class="footer">
     <div class="container footer__inner">
-      <p class="footer__copy">&copy; 2025 GlucoScreen. For informational purposes only.</p>
+      <p class="footer__copy">&copy; 2026 GlucoScreen. For informational purposes only.</p>
       <nav class="footer__links" aria-label="Footer navigation">
         <a href="{{ url_for('main.index') }}#how-it-works">How it works</a>
         <a href="{{ url_for('main.index') }}#features">Features</a>
@@ -118,32 +132,72 @@
     (function () {
       const dropdown = document.getElementById('screeningDropdown');
       const toggleBtn = document.getElementById('nav-cta-btn');
-      if (!dropdown || !toggleBtn) return;
+      const mobileToggle = document.getElementById('navMobileToggle');
+      const mainNav = document.getElementById('mainNav');
 
-      toggleBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        const isExpanded = toggleBtn.getAttribute('aria-expanded') === 'true';
-        toggleBtn.setAttribute('aria-expanded', !isExpanded);
-        dropdown.classList.toggle('open');
-      });
+      // Screening Dropdown
+      if (dropdown && toggleBtn) {
+        toggleBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          const isExpanded = toggleBtn.getAttribute('aria-expanded') === 'true';
+          toggleBtn.setAttribute('aria-expanded', !isExpanded);
+          dropdown.classList.toggle('open');
+        });
 
-      document.addEventListener('click', function (e) {
-        if (!dropdown.contains(e.target)) {
-          toggleBtn.setAttribute('aria-expanded', 'false');
-          dropdown.classList.remove('open');
-        }
-      });
+        document.addEventListener('click', function (e) {
+          if (!dropdown.contains(e.target)) {
+            toggleBtn.setAttribute('aria-expanded', 'false');
+            dropdown.classList.remove('open');
+          }
+        });
 
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && dropdown.classList.contains('open')) {
-          toggleBtn.setAttribute('aria-expanded', 'false');
-          dropdown.classList.remove('open');
-          toggleBtn.focus();
-        }
-      });
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && dropdown.classList.contains('open')) {
+            toggleBtn.setAttribute('aria-expanded', 'false');
+            dropdown.classList.remove('open');
+            toggleBtn.focus();
+          }
+        });
+      }
+
+      // Mobile Hamburger Navigation Toggle
+      if (mobileToggle && mainNav) {
+        mobileToggle.addEventListener('click', function (e) {
+          e.stopPropagation();
+          const isOpen = mainNav.classList.toggle('open');
+          mobileToggle.classList.toggle('active', isOpen);
+          mobileToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+
+        document.addEventListener('click', function (e) {
+          if (!mainNav.contains(e.target) && !mobileToggle.contains(e.target) && mainNav.classList.contains('open')) {
+            mainNav.classList.remove('open');
+            mobileToggle.classList.remove('active');
+            mobileToggle.setAttribute('aria-expanded', 'false');
+          }
+        });
+
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && mainNav.classList.contains('open')) {
+            mainNav.classList.remove('open');
+            mobileToggle.classList.remove('active');
+            mobileToggle.setAttribute('aria-expanded', 'false');
+            mobileToggle.focus();
+          }
+        });
+
+        mainNav.querySelectorAll('.navbar__link').forEach(function (link) {
+          link.addEventListener('click', function () {
+            mainNav.classList.remove('open');
+            mobileToggle.classList.remove('active');
+            mobileToggle.setAttribute('aria-expanded', 'false');
+          });
+        });
+      }
     })();
   </script>
 
   {% block extra_scripts %}{% endblock %}
 </body>
+
 </html>

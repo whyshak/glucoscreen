@@ -116,17 +116,17 @@
                 <table class="guide-table">
                   <thead>
                     <tr>
-                      <th style="width: 140px;">Column Header</th>
-                      <th style="width: 175px;">Feature Name</th>
-                      <th>Accepted Values &amp; Detailed Specification</th>
+                      <th class="guide-th-col">Column Header</th>
+                      <th class="guide-th-name">Feature Name</th>
+                      <th class="guide-th-spec">Accepted Values &amp; Detailed Specification</th>
                     </tr>
                   </thead>
                   <tbody>
                     {% for col in columns %}
                     <tr>
-                      <td><code>{{ col }}</code></td>
-                      <td><strong>{{ feature_labels.get(col, col) }}</strong></td>
-                      <td>
+                      <td class="guide-td-col" data-label="Column Header"><code>{{ col }}</code></td>
+                      <td class="guide-td-name" data-label="Feature Name"><strong>{{ feature_labels.get(col, col) }}</strong></td>
+                      <td class="guide-td-spec" data-label="Specification">
                         {% if col in ['HighBP', 'HighChol', 'CholCheck', 'Smoker', 'Stroke', 'HeartDiseaseorAttack', 'PhysActivity', 'Fruits', 'Veggies', 'HvyAlcoholConsump', 'AnyHealthcare', 'NoDocbcCost', 'DiffWalk'] %}
                           <div class="guide-val-flex">
                             <span class="guide-item-pill"><strong class="guide-badge">0</strong> No</span>
@@ -919,8 +919,8 @@
         const feat = row.features || {};
 
         tr.innerHTML = `
-          <td><strong>#${row.row_id}</strong></td>
-          <td>
+          <td class="td-id" data-label="Record ID"><strong>#${row.row_id}</strong></td>
+          <td class="td-score" data-label="Risk Score">
             <div class="table-score-wrap">
               <span class="table-score-val font-semibold">${row.risk_score_pct}%</span>
               <div class="table-mini-bar-track">
@@ -928,21 +928,21 @@
               </div>
             </div>
           </td>
-          <td>
+          <td class="td-badge" data-label="Risk Category">
             <span class="table-badge table-badge--${row.risk_tier}">
               <span class="badge-dot badge-dot--${row.risk_tier}"></span>
               ${row.risk_level}
             </span>
           </td>
-          <td>${getAgeGroupText(feat.Age)}</td>
-          <td><strong>${feat.BMI ? feat.BMI : '—'}</strong></td>
-          <td>${getGenHlthText(feat.GenHlth)}</td>
-          <td>${feat.HighBP == 1 ? '<span class="pill-yes">Yes</span>' : '<span class="pill-no">No</span>'}</td>
-          <td>${feat.HighChol == 1 ? '<span class="pill-yes">Yes</span>' : '<span class="pill-no">No</span>'}</td>
-          <td>${feat.Smoker == 1 ? '<span class="pill-yes">Yes</span>' : '<span class="pill-no">No</span>'}</td>
-          <td>${feat.PhysActivity == 1 ? '<span class="pill-yes">Yes</span>' : '<span class="pill-no">No</span>'}</td>
-          <td>${feat.Sex == 1 ? 'Male' : 'Female'}</td>
-          <td style="text-align:right;">
+          <td class="td-age" data-label="Age Group"><span class="td-mobile-label">Age</span><span class="td-val">${getAgeGroupText(feat.Age)}</span></td>
+          <td class="td-bmi" data-label="BMI"><span class="td-mobile-label">BMI</span><span class="td-val"><strong>${feat.BMI ? feat.BMI : '—'}</strong></span></td>
+          <td class="td-genhlth" data-label="Gen Health"><span class="td-mobile-label">Gen Health</span><span class="td-val">${getGenHlthText(feat.GenHlth)}</span></td>
+          <td class="td-bp" data-label="High BP"><span class="td-mobile-label">High BP</span><span class="td-val">${feat.HighBP == 1 ? '<span class="pill-yes">Yes</span>' : '<span class="pill-no">No</span>'}</span></td>
+          <td class="td-chol" data-label="High Chol"><span class="td-mobile-label">High Chol</span><span class="td-val">${feat.HighChol == 1 ? '<span class="pill-yes">Yes</span>' : '<span class="pill-no">No</span>'}</span></td>
+          <td class="td-smoker" data-label="Smoker"><span class="td-mobile-label">Smoker</span><span class="td-val">${feat.Smoker == 1 ? '<span class="pill-yes">Yes</span>' : '<span class="pill-no">No</span>'}</span></td>
+          <td class="td-phys" data-label="Phys Activity"><span class="td-mobile-label">Phys Act.</span><span class="td-val">${feat.PhysActivity == 1 ? '<span class="pill-yes">Yes</span>' : '<span class="pill-no">No</span>'}</span></td>
+          <td class="td-sex" data-label="Sex"><span class="td-mobile-label">Sex</span><span class="td-val">${feat.Sex == 1 ? 'Male' : 'Female'}</span></td>
+          <td class="td-actions" data-label="Details" style="text-align:right;">
             <button type="button" class="btn-row-details" data-id="${row.row_id}" title="View all indicators">
               View &rarr;
             </button>
