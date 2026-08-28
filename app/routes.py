@@ -23,6 +23,7 @@ from flask import (
     render_template,
     request,
     send_file,
+    send_from_directory,
     session,
     url_for,
 )
@@ -381,6 +382,18 @@ def get_risk_explanation(shap_values, class_index: int, raw_features=None, top_n
         "lowering":   lowering,
         "increasing": increasing,
     }
+
+
+# ── Favicon ──────────────────────────────────────────────────────────────────
+
+@main.route("/favicon.ico")
+def favicon():
+    """Serve the favicon for direct browser root queries."""
+    return send_from_directory(
+        os.path.join(current_app.root_path, "static"),
+        "favicon.ico",
+        mimetype="image/vnd.microsoft.icon",
+    )
 
 
 # ── Landing Page ─────────────────────────────────────────────────────────────
