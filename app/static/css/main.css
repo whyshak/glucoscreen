@@ -5340,6 +5340,7 @@ input[type="range"]:active::-webkit-slider-thumb {
   max-width: calc(100vw - 2rem);
   height: 560px;
   max-height: calc(100vh - 6rem);
+  max-height: calc(100dvh - 6rem);
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -5353,6 +5354,7 @@ input[type="range"]:active::-webkit-slider-thumb {
   transform: translateY(16px) scale(0.96);
   pointer-events: none;
   transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
 }
 
 .dia-chat-window--open {
@@ -5433,8 +5435,11 @@ input[type="range"]:active::-webkit-slider-thumb {
 
 /* ── Chat Messages Body ─────────────────────────────────────────────────── */
 .dia-messages-body {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 1rem;
   display: flex;
   flex-direction: column;
@@ -5629,12 +5634,16 @@ input[type="range"]:active::-webkit-slider-thumb {
   background: #ffffff;
   border-top: 1px solid var(--slate-200);
   flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
 }
 
 .dia-chat-input-container textarea {
   flex: 1;
   min-height: 38px;
-  max-height: 100px;
+  max-height: 120px;
+  height: 38px;
   resize: none;
   background: transparent;
   border: 1px solid var(--slate-200);
@@ -5646,6 +5655,9 @@ input[type="range"]:active::-webkit-slider-thumb {
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   line-height: 1.4;
+  overflow-y: hidden;
+  box-sizing: border-box;
+  word-break: break-word;
 }
 
 .dia-chat-input-container textarea:focus {
@@ -5898,20 +5910,57 @@ input[type="range"]:active::-webkit-slider-thumb {
   .dia-chat-window {
     position: fixed;
     top: 0;
+    top: var(--dia-viewport-top, 0px);
     bottom: 0;
     left: 0;
     right: 0;
     width: 100vw;
+    width: 100dvw;
     max-width: 100vw;
+    max-width: 100dvw;
     height: 100vh;
+    height: 100dvh;
+    height: var(--dia-viewport-height, 100dvh);
     max-height: 100vh;
+    max-height: 100dvh;
+    max-height: var(--dia-viewport-height, 100dvh);
     border-radius: 0;
     border: none;
+    z-index: 10000;
+    overscroll-behavior: contain;
+  }
+
+  .dia-chat-window--open {
+    transform: none;
+  }
+
+  .dia-chat-header {
+    padding-top: max(0.85rem, calc(0.5rem + env(safe-area-inset-top)));
+    padding-left: max(1rem, calc(0.75rem + env(safe-area-inset-left)));
+    padding-right: max(1rem, calc(0.75rem + env(safe-area-inset-right)));
+  }
+
+  .dia-chat-input-container {
+    padding: 0.5rem 0.75rem;
+    padding-left: max(0.75rem, calc(0.5rem + env(safe-area-inset-left)));
+    padding-right: max(0.75rem, calc(0.5rem + env(safe-area-inset-right)));
+  }
+
+  .dia-chat-input-container textarea {
+    font-size: 1rem; /* 16px prevents iOS Safari auto-zoom on focus */
+    padding: 0.55rem 0.75rem;
+  }
+
+  .dia-disclaimer-footer {
+    padding: 0.35rem 0.75rem max(0.5rem, calc(0.35rem + env(safe-area-inset-bottom)));
+    padding-left: max(0.75rem, calc(0.5rem + env(safe-area-inset-left)));
+    padding-right: max(0.75rem, calc(0.5rem + env(safe-area-inset-right)));
   }
 
   .dia-fullpage-panel {
     border-radius: 1rem;
     height: calc(100vh - 120px);
+    height: calc(100dvh - 120px);
     min-height: 480px;
   }
 
@@ -5925,9 +5974,19 @@ input[type="range"]:active::-webkit-slider-thumb {
 
   .dia-fullpage-messages-body {
     padding: 1rem;
+    min-height: 0;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
 
   .dia-fullpage-input-container {
     padding: 0.75rem 1rem;
+    padding-left: max(1rem, calc(0.75rem + env(safe-area-inset-left)));
+    padding-right: max(1rem, calc(0.75rem + env(safe-area-inset-right)));
+    padding-bottom: max(0.75rem, calc(0.5rem + env(safe-area-inset-bottom)));
+  }
+
+  .dia-fullpage-input-container textarea {
+    font-size: 1rem; /* 16px prevents iOS Safari auto-zoom on focus */
   }
 }
