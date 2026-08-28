@@ -60,6 +60,8 @@
     messages = [{ ...WELCOME_MESSAGE }];
     saveChatHistory();
     renderAllViews();
+    resetTextarea(document.getElementById('dia-chat-input'), 'dia-chat-input', 'dia-chat-send');
+    resetTextarea(document.getElementById('dia-fullpage-input'), 'dia-fullpage-input', 'dia-fullpage-send');
   }
 
   // ── Markdown / Rich text formatter ───────────────────────────────────────
@@ -297,16 +299,45 @@
     }
   }
 
+  function autoResizeTextarea(textarea) {
+    if (!textarea) return;
+    const maxHeight = 120;
+    // Temporarily reset height to auto to recalculate scrollHeight accurately
+    textarea.style.height = 'auto';
+    const scrollH = textarea.scrollHeight;
+    if (scrollH > maxHeight) {
+      textarea.style.height = `${maxHeight}px`;
+      textarea.style.overflowY = 'auto';
+    } else {
+      const targetH = Math.max(scrollH, 38);
+      textarea.style.height = `${targetH}px`;
+      textarea.style.overflowY = 'hidden';
+    }
+  }
+
+  function resetTextarea(textarea, inputId, sendBtnId) {
+    if (!textarea) return;
+    textarea.value = '';
+    textarea.style.height = '';
+    textarea.style.overflowY = 'hidden';
+    autoResizeTextarea(textarea);
+    if (inputId && sendBtnId) {
+      updateInputState(inputId, sendBtnId);
+    }
+  }
+
   function setupInputHandlers(inputId, sendBtnId, formId) {
     const input = document.getElementById(inputId);
     const form = document.getElementById(formId);
 
     if (!input || !form) return;
 
-    // Auto-resize textarea
+    // Initial resize calculation
+    autoResizeTextarea(input);
+
+    // Auto-resize textarea on typing or paste/cut
     input.addEventListener('input', () => {
-      input.style.height = 'auto';
-      input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+      autoResizeTextarea(input);
       updateInputState(inputId, sendBtnId);
     });
 
@@ -316,8 +347,7 @@
         e.preventDefault();
         const text = input.value.trim();
         if (text && !isTyping) {
-          input.value = '';
-          input.style.height = 'auto';
+          resetTextarea(input, inputId, sendBtnId);
           sendMessage(text);
         }
       }
@@ -328,14 +358,30 @@
       e.preventDefault();
       const text = input.value.trim();
       if (text && !isTyping) {
-        input.value = '';
-        input.style.height = 'auto';
+        resetTextarea(input, inputId, sendBtnId);
         sendMessage(text);
       }
     });
   }
 
   // ── Floating Widget Toggle Controller ────────────────────────────────────
+  function updateViewportHeight() {
+    const chatWindow = document.getElementById('dia-chat-window');
+    if (!chatWindow) return;
+
+    if (window.innerWidth <= 640 && chatWindow.classList.contains('dia-chat-window--open')) {
+      if (window.visualViewport) {
+        const vpHeight = window.visualViewport.height;
+        const vpTop = window.visualViewport.offsetTop;
+        document.documentElement.style.setProperty('--dia-viewport-height', `${vpHeight}px`);
+        document.documentElement.style.setProperty('--dia-viewport-top', `${vpTop}px`);
+      }
+    } else {
+      document.documentElement.style.removeProperty('--dia-viewport-height');
+      document.documentElement.style.removeProperty('--dia-viewport-top');
+    }
+  }
+
   function setupWidgetController() {
     const toggleBtn = document.getElementById('dia-chat-toggle');
     const chatWindow = document.getElementById('dia-chat-window');
@@ -351,8 +397,12 @@
       toggleBtn.setAttribute('aria-expanded', 'true');
       toggleBtn.classList.add('dia-chat-toggle--active');
       renderAllViews();
+      updateViewportHeight();
       setTimeout(() => {
-        if (chatInput) chatInput.focus();
+        if (chatInput) {
+          chatInput.focus();
+          autoResizeTextarea(chatInput);
+        }
       }, 100);
     }
 
@@ -360,6 +410,8 @@
       chatWindow.classList.remove('dia-chat-window--open');
       toggleBtn.setAttribute('aria-expanded', 'false');
       toggleBtn.classList.remove('dia-chat-toggle--active');
+      document.documentElement.style.removeProperty('--dia-viewport-height');
+      document.documentElement.style.removeProperty('--dia-viewport-top');
       setTimeout(() => {
         if (!chatWindow.classList.contains('dia-chat-window--open')) {
           chatWindow.setAttribute('hidden', '');
@@ -404,10 +456,19 @@
     }
   }
 
+  function setupViewportListeners() {
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', updateViewportHeight);
+      window.visualViewport.addEventListener('scroll', updateViewportHeight);
+    }
+    window.addEventListener('resize', updateViewportHeight);
+  }
+
   // ── Initialization on DOM ready ──────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', () => {
     setupWidgetController();
     setupFullpageController();
+    setupViewportListeners();
     setupInputHandlers('dia-chat-input', 'dia-chat-send', 'dia-chat-form');
     setupInputHandlers('dia-fullpage-input', 'dia-fullpage-send', 'dia-fullpage-form');
     renderAllViews();
